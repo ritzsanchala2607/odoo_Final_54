@@ -10,11 +10,10 @@ const VenuesPage = () => {
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [priceRange, setPriceRange] = useState([0, 5500]);
-  const [venueType, setVenueType] = useState("");
   const [rating, setRating] = useState("");
-  const [distanceFilters, setDistanceFilters] = useState([]);
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,12 +40,10 @@ const VenuesPage = () => {
           location: court.venue?.address || court.venue?.name || "Unknown",
           capacity: court.capacity ? `${court.capacity} people` : "",
           price: court.price_per_hour || 0,
-          rating: court.venue?.rating || 0,
-          type: court.venue?.venue_type || "Indoor",
-          distance: court.venue?.distance || 0,
-          image:
-            court.venue?.image_url ||
-            "https://via.placeholder.com/400x300?text=Venue+Image",
+          rating: court.venue?.rating_avg || 0,
+          type: "Unknown", // venue_type is not available in the model
+          distance: court.venue?.distance || 0, // distance is not in the model
+          image: "https://via.placeholder.com/400x300?text=Venue+Image", // image_url is not available
           available: court.is_active,
         }));
         setVenues(mapped);
@@ -59,35 +56,25 @@ const VenuesPage = () => {
     fetchCourts();
   }, []);
 
-  // ✅ Handle Distance Checkbox
-  const handleDistanceChange = (value) => {
-    setDistanceFilters((prev) =>
-      prev.includes(value) ? prev.filter((d) => d !== value) : [...prev, value]
-    );
-  };
+
 
   // ✅ Filtering Logic
   const filteredVenues = venues.filter((venue) => {
     const matchesSearch =
-      venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      venue.location.toLowerCase().includes(searchQuery.toLowerCase());
+      venue.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === "All" || venue.category === selectedCategory;
     const matchesPrice =
       venue.price >= priceRange[0] && venue.price <= priceRange[1];
-    const matchesType = !venueType || venue.type === venueType;
     const matchesRating = !rating || venue.rating >= rating;
-    const matchesDistance =
-      distanceFilters.length === 0 ||
-      distanceFilters.some((limit) => venue.distance <= limit);
+    const matchesLocation = venue.location.toLowerCase().includes(locationQuery.toLowerCase());
 
     return (
       matchesSearch &&
       matchesCategory &&
       matchesPrice &&
-      matchesType &&
       matchesRating &&
-      matchesDistance
+      matchesLocation
     );
   });
 
@@ -130,24 +117,6 @@ const VenuesPage = () => {
             ₹{priceRange[0]} - ₹{priceRange[1]}
           </div>
 
-          <h3>Choose Venue Type</h3>
-          <label>
-            <input
-              type="radio"
-              name="type"
-              onChange={() => setVenueType("Indoor")}
-            />{" "}
-            Indoor
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="type"
-              onChange={() => setVenueType("Outdoor")}
-            />{" "}
-            Outdoor
-          </label>
-
           <h3>Rating</h3>
           {[4, 3, 2, 1].map((r) => (
             <label key={r}>
@@ -156,17 +125,14 @@ const VenuesPage = () => {
             </label>
           ))}
 
-          <h3>Distance (Around me)</h3>
-          {[5, 10, 20].map((dist) => (
-            <label key={dist}>
-              <input
-                type="checkbox"
-                checked={distanceFilters.includes(dist)}
-                onChange={() => handleDistanceChange(dist)}
-              />{" "}
-              Within {dist} km
-            </label>
-          ))}
+          <h3>Filter by location</h3>
+          <Input
+            type="text"
+            placeholder="Enter location, e.g., Sargasan"
+            value={locationQuery}
+            onChange={(e) => setLocationQuery(e.target.value)}
+          />
+
 
           <Button
             variant="secondary"
@@ -174,9 +140,9 @@ const VenuesPage = () => {
               setSearchQuery("");
               setSelectedCategory("All");
               setPriceRange([0, 5500]);
-              setVenueType("");
+
               setRating("");
-              setDistanceFilters([]);
+              setLocationQuery("");
             }}
           >
             Clear Filters

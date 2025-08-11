@@ -55,7 +55,13 @@ async function deleteCourt(courtId) {
 
 // <<<<<<< krish
 async function listAllCourts() {
-  return Court.findAll();
+  return Court.findAll({
+    include: [{
+      model: Venue,
+      as: 'venue',
+            attributes: ['id', 'name', 'address', 'city', 'rating_avg']
+    }]
+  });
 }
 
 // module.exports = { createCourt, listCourts  , listAllCourts};
