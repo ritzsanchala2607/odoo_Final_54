@@ -31,7 +31,7 @@ async function signup({ email, password, full_name, role, avatar_url , phone , s
 
     //Commented out email sending logic for now to avoid reference errors
     let mailSubject = "Verification Email From Griwa Internationals";
-    let content = '<p> Hello ' + full_name + ', Please verify your email address.</p>';
+    let content = '<p> Hello ' + full_name + ', Please verify your email address.'+'<br>Your OTP is '+otp+'</p>';
     console.log(email, mailSubject, content);
     await sendMail({
       to: email,
