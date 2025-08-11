@@ -1,12 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Header from "../components/Header";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Select from "../components/Select";
 import BookingDetailsModal from "../components/BookingDetailsModal";
 import BookingEditModal from "../components/BookingEditModal";
+import ReviewModal from "../components/ReviewModal";
 import "../components/ForgotPasswordModal.css";
 import "../components/BookingModals.css";
+import "../components/ReviewModal.css";
 import "./MyBookingsPage.css";
 
 const MyBookingsPage = () => {
@@ -17,6 +19,7 @@ const MyBookingsPage = () => {
 
   // Stepper state
   const [step, setStep] = useState(1);
+  const [date, setDate] = useState("");
 
   // Bookings list state
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -25,7 +28,16 @@ const MyBookingsPage = () => {
   const [editMode, setEditMode] = useState("edit");
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  // Demo bookings data (replace with API later)
+  // Review modal state
+  const [showReview, setShowReview] = useState(false);
+  const [selectedBookingForReview, setSelectedBookingForReview] =
+    useState(null);
+
+  // Animation state for filtering
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [courtAnimationKey, setCourtAnimationKey] = useState(0);
+
+  // Demo bookings data
   const bookings = {
     upcoming: [
       {
@@ -72,20 +84,6 @@ const MyBookingsPage = () => {
         price_per_hour: "60.00",
         capacity: 4,
       },
-      {
-        id: 4,
-        sportName: "Badminton",
-        venueName: "Riverside Club",
-        venueLocation: "Riverside",
-        venueImage:
-          "https://images.unsplash.com/photo-1604908554027-783b2abf64f6?w=800&auto=format&fit=crop&q=60",
-        date: "2025-01-05",
-        time: "09:00 AM - 10:00 AM",
-        status: "completed",
-        bookingId: "QC-BDM-0239",
-        price_per_hour: "45.00",
-        capacity: 4,
-      },
     ],
     cancelled: [
       {
@@ -102,6 +100,58 @@ const MyBookingsPage = () => {
         cancellationReason: "Weather conditions",
       },
     ],
+  };
+
+  // Function to check if booking is completed (event has passed)
+  const isBookingCompleted = (booking) => {
+    try {
+      const currentDate = new Date();
+      const bookingDate = new Date(booking.date);
+
+      // Extract end time from time string (e.g., "06:30 PM - 08:00 PM")
+      const timeRange = booking.time.split(" - ");
+      if (timeRange.length !== 2) return false;
+
+      const endTimeStr = timeRange[1].trim();
+      const [time, period] = endTimeStr.split(" ");
+      const [hours, minutes] = time.split(":").map(Number);
+
+      // Convert to 24-hour format
+      let endHour = hours;
+      if (period === "PM" && hours !== 12) {
+        endHour += 12;
+      } else if (period === "AM" && hours === 12) {
+        endHour = 0;
+      }
+
+      // Set the end time on the booking date
+      const bookingEndTime = new Date(bookingDate);
+      bookingEndTime.setHours(endHour, minutes, 0, 0);
+
+      // Check if current time is after booking end time
+      return currentDate >= bookingEndTime;
+    } catch (error) {
+      console.error("Error parsing booking time:", error);
+      return false;
+    }
+  };
+
+  // Function to handle review submission
+  const handleReviewSubmit = (reviewData) => {
+    console.log("Review submitted:", {
+      booking_id: selectedBookingForReview.id,
+      venue_id: selectedBookingForReview.venueId || "venue-uuid",
+      user_id: "current-user-uuid", // This should come from auth context
+      rating: reviewData.rating,
+      title: reviewData.title,
+      body: reviewData.body,
+      created_at: new Date().toISOString(),
+    });
+
+    // Here you would typically send the review to your API
+    alert("Review submitted successfully!");
+    setShowReview(false);
+    setSelectedBookingForReview(null);
   };
 
   const getStatusColor = (status) => {
@@ -134,10 +184,7 @@ const MyBookingsPage = () => {
     }
   };
 
-  // Step 1 state
-  const cities = ["Mumbai", "Pune", "Bengaluru", "Delhi"];
-  const sports = ["Football", "Basketball", "Tennis", "Badminton"];
-
+  // Courts data
   const courts = useMemo(
     () => [
       {
@@ -248,28 +295,87 @@ const MyBookingsPage = () => {
     []
   );
 
+  // Filter states - START WITH EMPTY VALUES
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedSport, setSelectedSport] = useState("");
   const [selectedCourtName, setSelectedCourtName] = useState("");
 
-  const filteredCourts = useMemo(
-    () =>
-      courts.filter(
-        (c) =>
-          (!selectedCity || c.city === selectedCity) &&
-          (!selectedSport || c.sport === selectedSport)
-      ),
-    [courts, selectedCity, selectedSport]
-  );
+  // Get unique cities and sports from courts data
+  const cities = useMemo(() => {
+    const uniqueCities = [...new Set(courts.map((court) => court.city))].sort();
+    return ["All Cities", ...uniqueCities];
+  }, [courts]);
 
-  const courtNameOptions = useMemo(
-    () => filteredCourts.map((c) => c.name),
-    [filteredCourts]
-  );
-  const selectedCourt = useMemo(
-    () => courts.find((c) => c.name === selectedCourtName) || null,
-    [courts, selectedCourtName]
-  );
+  const sports = useMemo(() => {
+    const uniqueSports = [
+      ...new Set(courts.map((court) => court.sport)),
+    ].sort();
+    return ["All Sports", ...uniqueSports];
+  }, [courts]);
+
+  // WORKING FILTER LOGIC
+  const filteredCourts = useMemo(() => {
+    console.log("Filtering with:", {
+      selectedCity,
+      selectedSport,
+      selectedCourtName,
+    });
+
+    let filtered = courts;
+
+    // Filter by city
+    if (selectedCity && selectedCity !== "All Cities") {
+      filtered = filtered.filter((court) => court.city === selectedCity);
+    }
+
+    // Filter by sport
+    if (selectedSport && selectedSport !== "All Sports") {
+      filtered = filtered.filter((court) => court.sport === selectedSport);
+    }
+
+    console.log("Filtered result:", filtered);
+    return filtered;
+  }, [courts, selectedCity, selectedSport]);
+
+  // Get court names for the third dropdown
+  const availableCourtNames = useMemo(() => {
+    return filteredCourts.map((court) => court.name);
+  }, [filteredCourts]);
+
+  // Get selected court object
+  const selectedCourt = useMemo(() => {
+    return courts.find((court) => court.name === selectedCourtName) || null;
+  }, [courts, selectedCourtName]);
+
+  // Handle filter changes with animation
+  const handleCityChange = (newCity) => {
+    console.log("City changed to:", newCity);
+    setIsFiltering(true);
+    setSelectedCity(newCity);
+    setSelectedCourtName(""); // Reset court selection when city changes
+    setCourtAnimationKey((prev) => prev + 1);
+
+    setTimeout(() => {
+      setIsFiltering(false);
+    }, 300);
+  };
+
+  const handleSportChange = (newSport) => {
+    console.log("Sport changed to:", newSport);
+    setIsFiltering(true);
+    setSelectedSport(newSport);
+    setSelectedCourtName(""); // Reset court selection when sport changes
+    setCourtAnimationKey((prev) => prev + 1);
+
+    setTimeout(() => {
+      setIsFiltering(false);
+    }, 300);
+  };
+
+  const handleCourtChange = (newCourt) => {
+    console.log("Court changed to:", newCourt);
+    setSelectedCourtName(newCourt);
+  };
 
   // Step 2 state
   const [selectedSlot, setSelectedSlot] = useState("");
@@ -284,8 +390,9 @@ const MyBookingsPage = () => {
   const totalCharge = perPersonCharge * (Number(numPlayers) || 0);
 
   const canGoNext = () => {
-    if (step === 1)
-      return Boolean(selectedCity && selectedSport && selectedCourtName);
+    if (step === 1) {
+      return Boolean(selectedCourtName && selectedCity && selectedSport);
+    }
     if (step === 2) {
       const hasSlot = Boolean(selectedSlot);
       const hasCustomRange = Boolean(
@@ -301,14 +408,33 @@ const MyBookingsPage = () => {
 
   const handleNext = () => {
     if (!canGoNext()) return;
-    if (step < 3) setStep(step + 1);
-    else {
-      // Final submit stub
-      alert("Booking confirmed. Payment method: " + paymentMethod);
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      alert(`Booking confirmed! 
+Court: ${selectedCourt.name}
+Time: ${startTime} - ${endTime}
+Players: ${numPlayers}
+Total: ₹${totalCharge}
+Payment: ${paymentMethod}`);
+      setShowWizard(false);
+      resetForm();
     }
   };
 
   const handleBack = () => setStep(Math.max(1, step - 1));
+
+  const resetForm = () => {
+    setStep(1);
+    setSelectedCity("");
+    setSelectedSport("");
+    setSelectedCourtName("");
+    setSelectedSlot("");
+    setNumPlayers(1);
+    setStartTime("");
+    setEndTime("");
+    setPaymentMethod("Pay on Visit");
+  };
 
   const Stepper = () => (
     <div className="stepper">
@@ -385,7 +511,7 @@ const MyBookingsPage = () => {
             variant="primary"
             onClick={() => {
               setShowWizard(true);
-              setStep(1);
+              resetForm();
             }}
           >
             + Create New Booking
@@ -509,13 +635,28 @@ const MyBookingsPage = () => {
                     >
                       Edit
                     </Button>
-                    <Button
-                      variant="primary"
-                      size="small"
-                      onClick={() => alert("Cancel request submitted")}
-                    >
-                      Cancel
-                    </Button>
+
+                    {/* Conditionally show Review button for completed bookings */}
+                    {isBookingCompleted(b) ? (
+                      <Button
+                        variant="primary"
+                        size="small"
+                        onClick={() => {
+                          setSelectedBookingForReview(b);
+                          setShowReview(true);
+                        }}
+                      >
+                        Review
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="small"
+                        onClick={() => alert("Cancel request submitted")}
+                      >
+                        Cancel
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -523,6 +664,7 @@ const MyBookingsPage = () => {
           )}
         </div>
       </div>
+
       {showWizard && (
         <div className="modal-overlay">
           <div className="modal-content booking-modal">
@@ -536,7 +678,7 @@ const MyBookingsPage = () => {
               </button>
             </div>
             <div className="modal-body">
-              <div className="wizard-header" style={{ marginBottom: 10 }}>
+              <div className="wizard-header">
                 <p>Complete the steps to place your booking</p>
               </div>
               <Stepper />
@@ -545,85 +687,103 @@ const MyBookingsPage = () => {
                 {step === 1 && (
                   <div className="step-panel">
                     <div className="filters-row">
-                      <Select
-                        placeholder="Select City"
-                        options={cities}
-                        value={selectedCity}
-                        onChange={setSelectedCity}
-                      />
-                      <Select
-                        placeholder="Select Sport"
-                        options={sports}
-                        value={selectedSport}
-                        onChange={setSelectedSport}
-                      />
-                      <Select
-                        placeholder="Select Court"
-                        options={courtNameOptions}
-                        value={selectedCourtName}
-                        onChange={setSelectedCourtName}
-                      />
+                      <div className="filter-container">
+                        <label>City</label>
+                        <Select
+                          placeholder="Select City"
+                          options={cities}
+                          value={selectedCity}
+                          onChange={handleCityChange}
+                        />
+                      </div>
+                      <div className="filter-container">
+                        <label>Sport</label>
+                        <Select
+                          placeholder="Select Sport"
+                          options={sports}
+                          value={selectedSport}
+                          onChange={handleSportChange}
+                        />
+                      </div>
+                      <div className="filter-container">
+                        <label>Court</label>
+                        <Select
+                          placeholder="Select Court"
+                          options={availableCourtNames}
+                          value={selectedCourtName}
+                          onChange={handleCourtChange}
+                          disabled={filteredCourts.length === 0}
+                        />
+                      </div>
                     </div>
 
-                    {(() => {
-                      const showMap = Boolean(selectedCity || selectedSport);
-                      return (
-                        <div
-                          className={`map-and-courts ${
-                            !showMap ? "no-map" : ""
-                          }`}
-                        >
-                          {/* {showMap && <div className="map-panel" />} */}
-                          <div className="courts-grid">
-                            {filteredCourts.map((c) => (
-                              <div
-                                key={c.id}
-                                className={`court-card ${
-                                  selectedCourt && selectedCourt.id === c.id
-                                    ? "court-card-active"
-                                    : ""
-                                }`}
-                                onClick={() => setSelectedCourtName(c.name)}
-                              >
-                                <img
-                                  className="court-image"
-                                  src={c.image}
-                                  alt={c.name}
-                                />
-                                <div className="court-content">
-                                  <div className="court-header">
-                                    <h3>{c.name}</h3>
-                                    <RatingStars rating={c.rating} />
-                                  </div>
-                                  <div className="court-badges">
-                                    <span className="sport-badge">
-                                      {c.sport}
-                                    </span>
-                                    <span className="city-badge">{c.city}</span>
-                                  </div>
-                                  <div className="court-meta">
-                                    <span className="meta-item">
-                                      <LocationIcon /> {c.location}
-                                    </span>
-                                    <span className="meta-item">
-                                      ₹{c.price_per_hour}/hr
-                                    </span>
-                                    <span className="meta-item">
-                                      Cap {c.capacity}
-                                    </span>
-                                  </div>
-                                </div>
+                    <div className="courts-container">
+                      <div className="filter-summary">
+                        <span>
+                          {filteredCourts.length} court
+                          {filteredCourts.length !== 1 ? "s" : ""} found
+                          {selectedCity && selectedCity !== "All Cities"
+                            ? ` in ${selectedCity}`
+                            : ""}
+                          {selectedSport && selectedSport !== "All Sports"
+                            ? ` for ${selectedSport}`
+                            : ""}
+                        </span>
+                      </div>
+
+                      <div
+                        className={`courts-grid ${
+                          isFiltering ? "filtering" : ""
+                        }`}
+                        key={courtAnimationKey}
+                      >
+                        {filteredCourts.map((c, index) => (
+                          <div
+                            key={c.id}
+                            className={`court-card ${
+                              selectedCourt && selectedCourt.id === c.id
+                                ? "court-card-active"
+                                : ""
+                            }`}
+                            onClick={() => handleCourtChange(c.name)}
+                            style={{ animationDelay: `${index * 0.1}s` }}
+                          >
+                            <img
+                              className="court-image"
+                              src={c.image}
+                              alt={c.name}
+                            />
+                            <div className="court-content">
+                              <div className="court-header">
+                                <h3>{c.name}</h3>
+                                <RatingStars rating={c.rating} />
                               </div>
-                            ))}
-                            {filteredCourts.length === 0 && (
-                              <div className="empty-note">
-                                No courts match your filters
+                              <div className="court-badges">
+                                <span className="sport-badge">{c.sport}</span>
+                                <span className="city-badge">{c.city}</span>
                               </div>
-                            )}
+                              <div className="court-meta">
+                                <span className="meta-item">
+                                  <LocationIcon /> {c.location}
+                                </span>
+                                <span className="meta-item">
+                                  ₹{c.price_per_hour}/hr
+                                </span>
+                                <span className="meta-item">
+                                  Cap {c.capacity}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })()}
+                        ))}
+                        {filteredCourts.length === 0 && (
+                          <div className="empty-note">
+                            No courts match your filters. Try adjusting your
+                            selection.
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
                     <div className="nav-row">
                       <div />
@@ -640,6 +800,13 @@ const MyBookingsPage = () => {
 
                 {step === 2 && selectedCourt && (
                   <div className="step-panel">
+                    <div className="selected-court-summary">
+                      <h4>Selected Court: {selectedCourt.name}</h4>
+                      <p>
+                        {selectedCourt.location}, {selectedCourt.city}
+                      </p>
+                    </div>
+
                     <div className="slots-grid">
                       {selectedCourt.slots.map((t) => (
                         <button
@@ -670,11 +837,18 @@ const MyBookingsPage = () => {
                         <Input
                           type="number"
                           min={1}
+                          max={selectedCourt.capacity}
                           value={numPlayers}
                           onChange={(e) =>
-                            setNumPlayers(Number(e.target.value))
+                            setNumPlayers(
+                              Math.min(
+                                Number(e.target.value),
+                                selectedCourt.capacity
+                              )
+                            )
                           }
                         />
+                        <small>Max {selectedCourt.capacity} players</small>
                       </div>
                       <div className="input-group">
                         <label>Start Time</label>
@@ -730,6 +904,28 @@ const MyBookingsPage = () => {
 
                 {step === 3 && selectedCourt && (
                   <div className="step-panel">
+                    <div className="booking-summary">
+                      <h4>Booking Summary</h4>
+                      <div className="summary-item">
+                        <span>Court:</span>
+                        <strong>{selectedCourt.name}</strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Date:</span>
+                        <strong>{date || "Today"}</strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Time:</span>
+                        <strong>
+                          {startTime} - {endTime}
+                        </strong>
+                      </div>
+                      <div className="summary-item">
+                        <span>Players:</span>
+                        <strong>{numPlayers}</strong>
+                      </div>
+                    </div>
+
                     <div className="payment-grid">
                       <div className="charge-card">
                         <div className="charge-row">
@@ -755,6 +951,8 @@ const MyBookingsPage = () => {
                             onChange={(e) => setPaymentMethod(e.target.value)}
                           >
                             <option>Pay on Visit</option>
+                            <option>Pay Online</option>
+                            <option>UPI</option>
                           </select>
                         </div>
                         <div className="summary-note">
@@ -770,10 +968,7 @@ const MyBookingsPage = () => {
                       <Button
                         variant="primary"
                         disabled={!canGoNext()}
-                        onClick={() => {
-                          handleNext();
-                          setShowWizard(false);
-                        }}
+                        onClick={handleNext}
                       >
                         Confirm Booking
                       </Button>
@@ -798,6 +993,7 @@ const MyBookingsPage = () => {
           </div>
         </div>
       )}
+
       {showDetails && (
         <BookingDetailsModal
           booking={selectedBooking}
@@ -812,8 +1008,17 @@ const MyBookingsPage = () => {
           onClose={() => setShowEdit(false)}
         />
       )}
+      {showReview && (
+        <ReviewModal
+          booking={selectedBookingForReview}
+          onSubmit={handleReviewSubmit}
+          onClose={() => {
+            setShowReview(false);
+            setSelectedBookingForReview(null);
+          }}
+        />
+      )}
     </div>
   );
 };
-
 export default MyBookingsPage;

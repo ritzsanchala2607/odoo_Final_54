@@ -1305,6 +1305,346 @@
   gap: 0.8rem;
   margin-top: 1rem;
 }
+/* Venues Section Styles */
+.venues-section {
+  width: 100%;
+  padding: 0;
+}
+
+.venues-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.venues-header h3 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  padding: 10px;
+}
+
+.new-venue-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.new-venue-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.new-venue-btn:active {
+  transform: translateY(0);
+}
+
+.venue-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
+}
+
+.loading,
+.no-venues {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 30px;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.loading::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.no-venues {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+/* Venue Card */
+.venue-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.venue-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+/* Venue Info */
+.venue-info {
+  margin-bottom: 20px;
+}
+
+.venue-info h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 12px 0;
+}
+
+.venue-info p {
+  margin: 6px 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.venue-info p:first-of-type {
+  color: #475569;
+  font-weight: 500;
+}
+
+.venue-info p svg {
+  flex-shrink: 0;
+  color: #3b82f6;
+}
+
+.venue-courts {
+  background: #eff6ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #dbeafe;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #1e40af !important;
+  margin: 4px 0 !important;
+  font-size: 0.85rem !important;
+}
+
+.venue-capacity {
+  background: #f0fdf4;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #dcfce7;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #166534 !important;
+  margin: 4px 0 !important;
+  font-size: 0.85rem !important;
+}
+
+.venue-courts-info {
+  margin: 12px 0;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 3px solid #e2e8f0;
+}
+
+.venue-sports {
+  color: #475569 !important;
+  font-weight: 500 !important;
+  margin: 4px 0 !important;
+}
+
+.venue-avg-price {
+  color: #059669 !important;
+  font-weight: 500 !important;
+  margin: 4px 0 !important;
+}
+
+/* Status Styling */
+.venue-info p:nth-last-child(2) {
+  font-weight: 500;
+  color: #16a34a !important;
+  background: #f0fdf4;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex !important;
+  width: fit-content;
+  font-size: 0.85rem !important;
+  border: 1px solid #dcfce7;
+}
+
+/* Starting Price */
+.venue-info p:last-child {
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  background: #fffbeb;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #fef3c7;
+  display: inline-flex !important;
+  width: fit-content;
+}
+
+/* Venue Actions */
+.venue-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.venue-actions button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.venue-actions button:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.venue-actions button:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.venue-actions button:disabled:hover {
+  background: #e2e8f0;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 1200px) {
+  .venue-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .venues-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .venues-header h3 {
+    font-size: 1.5rem;
+  }
+  
+  .new-venue-btn {
+    align-self: stretch;
+    justify-content: center;
+  }
+  
+  .venue-list {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .venue-card {
+    padding: 25px;
+  }
+  
+  .venue-info h4 {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .venues-section {
+    padding: 0 4px;
+  }
+  
+  .venue-card {
+    padding: 18px;
+    border-radius: 10px;
+  }
+  
+  .venues-header {
+    margin-bottom: 24px;
+  }
+  
+  .venue-courts,
+  .venue-capacity {
+    font-size: 0.8rem !important;
+    padding: 5px 8px;
+  }
+  
+  .venue-courts-info {
+    padding: 10px;
+  }
+  
+  .venue-actions {
+    flex-direction: column;
+  }
+  
+  .venue-actions button {
+    width: 100%;
+    padding: 10px;
+  }
+}
+
+/* Subtle Animation for New Cards */
+.venue-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @keyframes fadeIn {
   from {opacity:0;}
   to {opacity:1;}
