@@ -6,7 +6,7 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 router.get('/', courtController.list);
 // <<<<<<< krish
 router.get('/all', courtController.listAll);
-router.post('/', requireAuth, requireRole('owner', 'admin'), validation.courtCreate, courtController.create);
+// router.post('/', requireAuth, requireRole('owner', 'admin'), validation.courtCreate, courtController.create);
 // =======
 router.get('/:id', courtController.get);
 router.post('/', requireAuth, requireRole('owner', 'admin'), courtController.create);
