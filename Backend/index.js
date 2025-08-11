@@ -30,6 +30,9 @@ app.use(cors({
     credentials: true
 }));
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Session and cookie middleware
 app.use(cookieParser());
 app.use(session({
