@@ -114,31 +114,34 @@ const RegisterPage = () => {
   //   return otp;
   // };
 
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm();
     console.log(formData);
 
     if (Object.keys(newErrors).length === 0) {
-      let avatarUrl = '';
+      let avatarBase64 = '';
       try {
-        // 1. Upload avatar image if present
+        // Convert avatar to base64 data URL (store directly instead of path)
         if (formData.avatar) {
-          const formDataObj = new FormData();
-          formDataObj.append('avatar', formData.avatar);
-          const uploadRes = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/upload-avatar`, formDataObj, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            withCredentials: true,
-          });
-          avatarUrl = uploadRes.data.avatar_url;
+          avatarBase64 = await fileToBase64(formData.avatar);
         }
       } catch (err) {
-        setErrors({ general: 'Avatar upload failed. Please try again.' });
+        setErrors({ general: 'Avatar processing failed. Please try again.' });
         console.log(err);
         return;
       }
       try {
-        // 2. Register user with avatar_url
+        // Register user with avatar as base64
         await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/register`, {
           full_name: formData.full_name,
           email: formData.email,
@@ -146,7 +149,7 @@ const RegisterPage = () => {
           role: formData.role,
           phone: formData.phone,
           short_bio: formData.short_bio,
-          avatar_url: avatarUrl,
+          avatar_url: avatarBase64,
         });
         // 3. Generate OTP for demo-only fallback and move to verify page
         // const otp = generateOTP();
