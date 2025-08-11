@@ -3,11 +3,34 @@ const jwt = require('jsonwebtoken');
 const { User } = require('../helper/db.helper');
 
 async function signup({ email, password, full_name, role, avatar_url }) {
-  const existing = await User.findOne({ where: { email } });
-  if (existing) throw new Error('Email already in use');
-  const password_hash = await bcrypt.hash(password, 10);
-  const user = await User.create({ email, password_hash, full_name, role, avatar_url, is_active: true, otp_verified: false });
-  return user;
+        const existingUser = await User.findOne({
+            where: { email: userData.email.toLowerCase() }
+        });
+
+        if (existingUser) {
+            throw new Error("Email Already Exists");
+        }
+
+        const hash = await bcrypt.hash(password, 10);
+        const otp = Math.floor(100000 + Math.random() * 900000);
+
+        const user = await User.create({
+          full_name: full_name,
+          email: email.toLowerCase(),
+          password_hash: hash,
+          avatar_url: avatar_url,
+          otp: otp , 
+          role: role,
+          is_active: true,
+          otp_verified: false,
+        });
+
+        let mailSubject = "Verification Email From Griwa Internationals";
+        let content = '<p> Hello ' + userData.name + ', \
+        Please<a href="http://127.0.0.1:3000/mail_verification?token='+ randomToken + '">Verify</a> Your Email Address.</p>';
+        await sendMail(userData.email, mailSubject, content);
+
+        return user;
 }
 
 async function login({ email, password }) {
@@ -17,7 +40,17 @@ async function login({ email, password }) {
   if (!ok) throw new Error('Invalid credentials');
   const token = jwt.sign({ id: user.id, role: user.role, email: user.email }, process.env.JWT_SECRET || 'dev_secret', { expiresIn: '7d' });
   return { user, token };
+} 
+
+async function verifyOtp({ email, otp }) {
+  const user = await User.findOne({ where: { email: email.toLowerCase() } });
+  if (!user) throw new Error('User not found');
+  if (user.otp !== otp) throw new Error('Invalid OTP');
+  user.otp = null;
+  user.otp_verified = true;
+  await user.save();
+  return { message: 'OTP verified successfully' };
 }
 
-module.exports = { signup, login };
+module.exports = { signup, login, verifyOtp };
 

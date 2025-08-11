@@ -5,6 +5,7 @@ const { validation } = require('../helper/validation');
 
 router.post('/signup', validation.signup, userController.signup);
 router.post('/login', validation.login, userController.login);
+router.post('/verify-otp', userController.verifyOtp);
 
 module.exports = router;
 

@@ -23,5 +23,15 @@ async function login(req, res) {
   }
 }
 
-module.exports = { signup, login };
+async function verifyOtp(req, res) {
+  try {
+    const { email, otp } = req.body;
+    const result = await userService.verifyOtp({ email, otp });
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { signup, login, verifyOtp };
 

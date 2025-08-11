@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
     phone: DataTypes.TEXT,
     short_bio: DataTypes.TEXT,
     created_at: DataTypes.DATE,
-    updated_at: DataTypes.DATE
+    updated_at: DataTypes.DATE,
+    otp: DataTypes.TEXT,
   }, {
     tableName: 'users',
     timestamps: false
