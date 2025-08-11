@@ -1,0 +1,212 @@
+QuickCourt Database Setup Instructions
+--------------------------------------
+
+1. Requirements:
+   - PostgreSQL 13+
+   - UUID extension enabled: run `CREATE EXTENSION IF NOT EXISTS "pgcrypto";`
+   - Optional: For exclusion constraints, run `CREATE EXTENSION IF NOT EXISTS btree_gist;`
+
+2. To create the database:
+   a) Create a new database:
+      `createdb quickcourt_db`
+
+   b) Connect to the database:
+      `psql quickcourt_db`
+
+   c) Run the schema file:
+      `\i quickcourt_schema.sql`
+
+3. Code Editor Usage (Backend):
+   - For Node.js + Sequelize/Prisma:
+     * Place `quickcourt_schema.sql` in your `/db` folder
+     * Run migrations with your ORM if you use them
+     * Or run raw SQL: `psql -d quickcourt_db -f quickcourt_schema.sql`
+
+   - For Python + SQLAlchemy:
+     * You can generate models from the schema using `sqlacodegen`
+
+4. Initial Data Seeding (optional):
+   - Insert some users, venues, courts for testing
+   - Example:
+     INSERT INTO users (email, password_hash, role, full_name)
+     VALUES ('admin@example.com', 'hashedpass', 'admin', 'Admin User');
+
+5. Important Notes:
+   - UUIDs are generated with `gen_random_uuid()` from `pgcrypto`
+   - ENUM `user_role` stores roles inline
+   - Ensure timezone settings in Postgres match your app
+
+Table-by-Table Guide
+--------------------
+
+1) users
+   - Stores all registered users with their profile info.
+   Columns:
+     * id (uuid) - Unique user ID
+     * email (text) - Login email (must be unique)
+     * password_hash (text) - Secure password hash
+     * role (enum) - 'user', 'owner', or 'admin'
+     * is_active (boolean) - Whether the account is active
+     * otp_verified (boolean) - Whether OTP verification is done
+     * avatar_url (text) - Profile image URL
+     * full_name (text) - User's full name
+     * phone (text) - Contact number
+     * short_bio (text) - Optional personal description
+     * created_at (timestamp) - When account was created
+     * updated_at (timestamp) - When profile was last updated
+
+2) venues
+   - Stores details about sports venues.
+   Columns:
+     * id (uuid) - Venue ID
+     * owner_id (uuid) - The owner (user) managing the venue
+     * name (text) - Venue name
+     * slug (text) - URL-friendly identifier
+     * description (text) - Detailed description
+     * address (text) - Physical address
+     * city (text) - City name
+     * latitude/longitude (double) - Map coordinates
+     * starting_price (numeric) - Minimum hourly price
+     * rating_avg (numeric) - Average rating
+     * status (text) - Approval status ('pending', 'approved', 'rejected')
+     * approved_by (uuid) - Admin who approved
+     * approved_at (timestamp) - Approval date
+     * created_at/updated_at (timestamp) - Timestamps
+
+3) venue_photos
+   - Stores photos for venues.
+   Columns:
+     * id (uuid) - Photo ID
+     * venue_id (uuid) - Linked venue
+     * url (text) - Image URL
+     * caption (text) - Description
+     * is_cover (boolean) - True if main photo
+     * sort_idx (int) - Display order
+
+4) amenities & venue_amenities
+   - amenities: List of possible amenities (Wi-Fi, Parking).
+   - venue_amenities: Linking table between venues and amenities.
+   Columns (amenities):
+     * id (uuid) - Amenity ID
+     * name (text) - Amenity name
+   Columns (venue_amenities):
+     * venue_id (uuid) - Linked venue
+     * amenity_id (uuid) - Linked amenity
+
+5) courts
+   - Individual bookable courts at a venue.
+   Columns:
+     * id (uuid) - Court ID
+     * venue_id (uuid) - Venue that owns it
+     * name (text) - Court name (Court 1, Turf A)
+     * sport_type (text) - Sport type
+     * price_per_hour (numeric) - Hourly price
+     * capacity (int) - Players per booking
+     * created_at/updated_at (timestamp) - Timestamps
+     * is_active (boolean) - Availability flag
+
+6) court_schedules
+   - Weekly recurring schedules for courts.
+   Columns:
+     * id (uuid) - Schedule ID
+     * court_id (uuid) - Linked court
+     * weekday (smallint) - Day of week (0=Sunday)
+     * start_time/end_time (time) - Opening and closing times
+     * slot_interval_minutes (smallint) - Slot duration
+     * price_multiplier (numeric) - Peak hour multiplier
+     * created_at (timestamp) - Created date
+
+7) court_slots
+   - Materialized time slots for fast booking.
+   Columns:
+     * id (uuid) - Slot ID
+     * court_id (uuid) - Linked court
+     * start_at/end_at (timestamp) - Slot boundaries
+     * base_price (numeric) - Slot base cost
+     * is_blocked (boolean) - True if blocked
+     * slot_status (text) - available/booked/blocked
+     * created_at (timestamp) - Created date
+
+8) blocked_slots
+   - Tracks maintenance or blocked time slots.
+   Columns:
+     * id (uuid) - Block ID
+     * court_id (uuid) - Linked court
+     * start_at/end_at (timestamp) - Block time
+     * reason (text) - Reason for blocking
+     * created_by (uuid) - Who blocked it
+     * created_at (timestamp) - Created date
+
+9) bookings
+   - Stores confirmed or pending bookings.
+   Columns:
+     * id (uuid) - Booking ID
+     * booking_ref (text) - Booking reference code
+     * user_id (uuid) - Who booked
+     * court_id (uuid) - Court booked
+     * venue_id (uuid) - Venue booked
+     * start_at/end_at (timestamp) - Booking time
+     * time_range (tstzrange) - Generated range for conflict checks
+     * status (text) - Booking status
+     * total_amount (numeric) - Price paid
+     * payment_id (uuid) - Linked payment
+     * created_at/updated_at (timestamp) - Timestamps
+     * cancelled_at (timestamp) - Cancel time
+     * cancel_reason (text) - Reason for cancel
+
+10) payments
+    - Payment records for bookings.
+    Columns:
+      * id (uuid) - Payment ID
+      * booking_id (uuid) - Linked booking
+      * method (text) - Payment method
+      * amount (numeric) - Amount paid
+      * currency (text) - Currency code
+      * status (text) - Payment status
+      * provider_txn_id (text) - External provider reference
+      * created_at (timestamp) - Payment date
+
+11) reviews
+    - User ratings and reviews for venues.
+    Columns:
+      * id (uuid) - Review ID
+      * venue_id (uuid) - Venue reviewed
+      * user_id (uuid) - Reviewer
+      * rating (smallint) - Score (1-5)
+      * title (text) - Review title
+      * body (text) - Review text
+      * created_at (timestamp) - Posted date
+
+12) facility_applications
+    - Applications by owners to register venues.
+    Columns:
+      * id (uuid) - Application ID
+      * owner_id (uuid) - Applicant
+      * venue_id (uuid) - Venue linked
+      * status (text) - Approval status
+      * submitted_at (timestamp) - Submission date
+      * decided_by (uuid) - Admin who decided
+      * decided_at (timestamp) - Decision date
+      * decision_notes (text) - Comments
+
+13) audit_logs
+    - Tracks actions for moderation or debugging.
+    Columns:
+      * id (uuid) - Log ID
+      * actor_id (uuid) - Who acted
+      * object_type (text) - Type of object changed
+      * object_id (uuid) - ID of object
+      * action (text) - Action performed
+      * payload (jsonb) - Extra details
+      * created_at (timestamp) - Action date
+
+14) notifications
+    - Stores in-app notifications for users.
+    Columns:
+      * id (uuid) - Notification ID
+      * user_id (uuid) - Recipient
+      * type (text) - Notification type
+      * payload (jsonb) - Notification content
+      * is_read (boolean) - Whether read
+      * created_at (timestamp) - Sent date
+
