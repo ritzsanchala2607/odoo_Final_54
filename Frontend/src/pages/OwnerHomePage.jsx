@@ -1,250 +1,632 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Header from '../components/Header';
-import Button from '../components/Button';
 import './OwnerHomePage.css';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+} from 'recharts';
+import {
+  Calendar, MapPin, Star, TrendingUp, Users, DollarSign, Activity, Trophy, AlertTriangle, Zap, Eye, BarChart3, TrendingDown,
+  LogOut, User, Filter, RefreshCw, Target, Brain
+} from 'lucide-react';
 
 const OwnerHomePage = () => {
+    const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [performanceFilter, setPerformanceFilter] = useState('all');
+  const [ratingFilter, setRatingFilter] = useState('all');
+  const [selectedPrediction, setSelectedPrediction] = useState(null);
+
+
+  // Get the current user from AuthContext
+
+
+  // Fallback for missing user data
+  const displayName = user?.full_name || user?.name || user?.email || 'Owner';
+  const displayEmail = user?.email || '';
+  const displayAvatar = user?.avatar_url || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
+
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
-
-  const getAvatarUrl = () => {
-    if (user && user.avatar_url) {
-      // If avatar_url starts with '/', it's a relative path, otherwise it's a full URL
-      if (user.avatar_url.startsWith('/')) {
-        return `${import.meta.env.VITE_BACKEND_URL}${user.avatar_url}`;
-      }
-      return user.avatar_url;
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
     }
-    // Fallback to default avatar
-    return '../assets/user_img.png';
   };
 
-  const handleAvatarError = (e) => {
-    // If user's avatar fails to load, fallback to default
-    e.target.src = '../assets/user_img.png';
-  };
-
-  // Demo data for owner dashboard
-  const venueStats = {
-    totalVenues: 3,
-    totalBookings: 24,
-    monthlyRevenue: 2800,
-    activeBookings: 8
-  };
+  // Mock data
+  const courtBookingData = [
+    { court: 'Arena Sports Complex - Court A', venue: 'Arena Sports Complex', bookings: 245, sport: 'Badminton', revenue: 12250, rating: 4.8, utilization: 92, peakHours: '6-8 PM' },
+    { court: 'Metro Sports Hub - Court 1', venue: 'Metro Sports Hub', bookings: 198, sport: 'Tennis', revenue: 9900, rating: 4.6, utilization: 78, peakHours: '7-9 AM' },
+    { court: 'City Turf - Field B', venue: 'City Turf', bookings: 176, sport: 'Football', revenue: 8800, rating: 4.7, utilization: 85, peakHours: '5-7 PM' },
+    { court: 'Elite Sports Center - Court 3', venue: 'Elite Sports Center', bookings: 152, sport: 'Badminton', revenue: 7600, rating: 4.5, utilization: 68, peakHours: '8-10 AM' },
+    { court: 'Sports Plaza - Court 2', venue: 'Sports Plaza', bookings: 134, sport: 'Basketball', revenue: 6700, rating: 4.3, utilization: 72, peakHours: '6-8 PM' },
+    { court: 'Prime Courts - Court A', venue: 'Prime Courts', bookings: 128, sport: 'Tennis', revenue: 6400, rating: 4.4, utilization: 65, peakHours: '9-11 AM' },
+    { court: 'Galaxy Sports - Field 1', venue: 'Galaxy Sports', bookings: 112, sport: 'Cricket', revenue: 5600, rating: 4.2, utilization: 58, peakHours: '4-6 PM' },
+    { court: 'Victory Sports - Court B', venue: 'Victory Sports', bookings: 98, sport: 'Badminton', revenue: 4900, rating: 4.1, utilization: 55, peakHours: '7-9 PM' }
+  ];
 
   const recentBookings = [
-    { id: 1, venue: 'City Sports Arena', court: 'Basketball Court 1', user: 'John Doe', date: '2024-01-15', time: '18:00-20:00', status: 'confirmed' },
-    { id: 2, venue: 'City Sports Arena', court: 'Tennis Court 2', user: 'Jane Smith', date: '2024-01-16', time: '19:00-21:00', status: 'pending' },
-    { id: 3, venue: 'Greenfield Courts', court: 'Badminton Court 1', user: 'Mike Johnson', date: '2024-01-17', time: '20:00-22:00', status: 'confirmed' }
+    { id: 1, user: 'Rajesh Kumar', venue: 'Arena Sports Complex', court: 'Court A', sport: 'Badminton', date: '2024-08-11', time: '18:00-19:00', status: 'Confirmed', amount: 500 },
+    { id: 2, user: 'Priya Singh', venue: 'Metro Sports Hub', court: 'Court 1', sport: 'Tennis', date: '2024-08-11', time: '19:00-20:00', status: 'Confirmed', amount: 600 },
+    { id: 3, user: 'Amit Sharma', venue: 'City Turf', court: 'Field B', sport: 'Football', date: '2024-08-11', time: '17:30-18:30', status: 'Pending', amount: 800 },
+    { id: 4, user: 'Neha Patel', venue: 'Elite Sports Center', court: 'Court 3', sport: 'Badminton', date: '2024-08-11', time: '20:00-21:00', status: 'Confirmed', amount: 450 },
+    { id: 5, user: 'Vikram Reddy', venue: 'Sports Plaza', court: 'Court 2', sport: 'Basketball', date: '2024-08-11', time: '16:00-17:00', status: 'Confirmed', amount: 550 }
   ];
 
-  const venues = [
-    { id: 1, name: 'City Sports Arena', location: 'Downtown', status: 'active', courts: 4, rating: 4.7 },
-    { id: 2, name: 'Greenfield Courts', location: 'Greenfield Ave', status: 'active', courts: 3, rating: 4.5 },
-    { id: 3, name: 'Skyline Sports Hub', location: 'Skyline Road', status: 'maintenance', courts: 2, rating: 4.8 }
+  const customerReviews = [
+    { id: 1, user: 'Rahul Sharma', venue: 'Arena Sports Complex', court: 'Court A', rating: 5, comment: 'Excellent facilities and very clean courts. Staff was helpful too!', date: '2 hours ago', sport: 'Badminton', verified: true },
+    { id: 2, user: 'Priya Patel', venue: 'Metro Sports Hub', court: 'Court 1', rating: 4, comment: 'Good court quality but parking could be better.', date: '5 hours ago', sport: 'Tennis', verified: true },
+    { id: 3, user: 'Amit Kumar', venue: 'City Turf', court: 'Field B', rating: 5, comment: 'Amazing turf quality! Perfect for weekend matches.', date: '1 day ago', sport: 'Football', verified: false },
+    { id: 4, user: 'Sneha Reddy', venue: 'Elite Sports Center', court: 'Court 3', rating: 3, comment: 'Court was okay but AC wasn\'t working properly. Need better maintenance.', date: '1 day ago', sport: 'Badminton', verified: true },
+    { id: 5, user: 'Vikram Singh', venue: 'Sports Plaza', court: 'Court 2', rating: 4, comment: 'Good experience overall. Will book again for sure.', date: '2 days ago', sport: 'Basketball', verified: true },
+    { id: 6, user: 'Kavya Nair', venue: 'Prime Courts', court: 'Court A', rating: 2, comment: 'Poor maintenance and booking system was confusing.', date: '2 days ago', sport: 'Tennis', verified: true },
+    { id: 7, user: 'Arjun Verma', venue: 'Galaxy Sports', court: 'Field 1', rating: 5, comment: 'Outstanding cricket pitch quality! Will definitely return.', date: '3 days ago', sport: 'Cricket', verified: true },
+    { id: 8, user: 'Meera Gupta', venue: 'Victory Sports', court: 'Court B', rating: 1, comment: 'Very disappointed with the service and court condition.', date: '3 days ago', sport: 'Badminton', verified: false }
   ];
 
-  const renderDashboard = () => (
-    <div className="dashboard-content">
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Total Venues</h3>
-          <p className="stat-number">{venueStats.totalVenues}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Total Bookings</h3>
-          <p className="stat-number">{venueStats.totalBookings}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Monthly Revenue</h3>
-          <p className="stat-number">${venueStats.monthlyRevenue}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Active Bookings</h3>
-          <p className="stat-number">{venueStats.activeBookings}</p>
-        </div>
-      </div>
+  const hourlyBookings = [
+    { hour: '6 AM', bookings: 15, revenue: 750 },
+    { hour: '7 AM', bookings: 28, revenue: 1400 },
+    { hour: '8 AM', bookings: 35, revenue: 1750 },
+    { hour: '9 AM', bookings: 22, revenue: 1100 },
+    { hour: '10 AM', bookings: 18, revenue: 900 },
+    { hour: '11 AM', bookings: 12, revenue: 600 },
+    { hour: '12 PM', bookings: 8, revenue: 400 },
+    { hour: '1 PM', bookings: 6, revenue: 300 },
+    { hour: '2 PM', bookings: 9, revenue: 450 },
+    { hour: '3 PM', bookings: 14, revenue: 700 },
+    { hour: '4 PM', bookings: 25, revenue: 1250 },
+    { hour: '5 PM', bookings: 32, revenue: 1600 },
+    { hour: '6 PM', bookings: 45, revenue: 2250 },
+    { hour: '7 PM', bookings: 48, revenue: 2400 },
+    { hour: '8 PM', bookings: 38, revenue: 1900 },
+    { hour: '9 PM', bookings: 25, revenue: 1250 },
+    { hour: '10 PM', bookings: 12, revenue: 600 }
+  ];
 
-      <div className="recent-bookings">
-        <h3>Recent Bookings</h3>
-        <div className="bookings-list">
-          {recentBookings.map(booking => (
-            <div key={booking.id} className="booking-item">
-              <div className="booking-info">
-                <h4>{booking.venue} - {booking.court}</h4>
-                <p>Booked by: {booking.user}</p>
-                <p>Date: {booking.date} | Time: {booking.time}</p>
-              </div>
-              <span className={`status ${booking.status}`}>
-                {booking.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  const monthlyTrends = [
+    { month: 'Jan', bookings: 1245, revenue: 62250, newUsers: 156 },
+    { month: 'Feb', bookings: 1389, revenue: 69450, newUsers: 178 },
+    { month: 'Mar', bookings: 1523, revenue: 76150, newUsers: 203 },
+    { month: 'Apr', bookings: 1678, revenue: 83900, newUsers: 234 },
+    { month: 'May', bookings: 1834, revenue: 91700, newUsers: 267 },
+    { month: 'Jun', bookings: 1967, revenue: 98350, newUsers: 289 },
+    { month: 'Jul', bookings: 2156, revenue: 107800, newUsers: 312 },
+    { month: 'Aug', bookings: 1843, revenue: 92150, newUsers: 198 }
+  ];
 
-  const renderVenues = () => (
-    <div className="venues-content">
-      <div className="venues-header">
-        <h3>My Venues</h3>
-        <Button onClick={() => navigate('/add-venue')}>Add New Venue</Button>
-      </div>
-      <div className="venues-grid">
-        {venues.map(venue => (
-          <div key={venue.id} className="venue-card">
-            <div className="venue-header">
-              <h4>{venue.name}</h4>
-              <span className={`status ${venue.status}`}>{venue.status}</span>
-            </div>
-            <p>Location: {venue.location}</p>
-            <p>Courts: {venue.courts}</p>
-            <p>Rating: ⭐ {venue.rating}</p>
-            <div className="venue-actions">
-              <Button variant="secondary" onClick={() => navigate(`/edit-venue/${venue.id}`)}>
-                Edit
-              </Button>
-              <Button variant="secondary" onClick={() => navigate(`/venue-bookings/${venue.id}`)}>
-                View Bookings
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const venuePerformance = [
+    { venue: 'Arena Sports Complex', bookings: 245, revenue: 12250, utilization: 92, satisfaction: 4.8 },
+    { venue: 'Metro Sports Hub', bookings: 198, revenue: 9900, utilization: 78, satisfaction: 4.6 },
+    { venue: 'City Turf', bookings: 176, revenue: 8800, utilization: 85, satisfaction: 4.7 },
+    { venue: 'Elite Sports Center', bookings: 152, revenue: 7600, utilization: 68, satisfaction: 4.5 },
+    { venue: 'Sports Plaza', bookings: 134, revenue: 6700, utilization: 72, satisfaction: 4.3 },
+    { venue: 'Prime Courts', bookings: 128, revenue: 6400, utilization: 65, satisfaction: 4.4 }
+  ];
 
-  const renderBookings = () => (
-    <div className="bookings-content">
-      <h3>All Bookings</h3>
-      <div className="bookings-filters">
-        <select defaultValue="all">
-          <option value="all">All Venues</option>
-          <option value="1">City Sports Arena</option>
-          <option value="2">Greenfield Courts</option>
-          <option value="3">Skyline Sports Hub</option>
-        </select>
-        <select defaultValue="all">
-          <option value="all">All Status</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="pending">Pending</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </div>
-      <div className="bookings-list">
-        {recentBookings.map(booking => (
-          <div key={booking.id} className="booking-item">
-            <div className="booking-info">
-              <h4>{booking.venue} - {booking.court}</h4>
-              <p>Booked by: {booking.user}</p>
-              <p>Date: {booking.date} | Time: {booking.time}</p>
-            </div>
-            <div className="booking-actions">
-              <span className={`status ${booking.status}`}>
-                {booking.status}
-              </span>
-              {booking.status === 'pending' && (
-                <div className="action-buttons">
-                  <Button variant="success" size="small">Approve</Button>
-                  <Button variant="danger" size="small">Reject</Button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const sportsDistribution = [
+    { sport: 'Badminton', count: 465, percentage: 35 },
+    { sport: 'Tennis', count: 326, percentage: 25 },
+    { sport: 'Football', count: 264, percentage: 20 },
+    { sport: 'Basketball', count: 134, percentage: 10 },
+    { sport: 'Cricket', count: 132, percentage: 10 }
+  ];
 
-  const renderAnalytics = () => (
-    <div className="analytics-content">
-      <h3>Analytics & Reports</h3>
-      <div className="analytics-grid">
-        <div className="chart-placeholder">
-          <h4>Revenue Trend</h4>
-          <p>Chart will be displayed here</p>
-        </div>
-        <div className="chart-placeholder">
-          <h4>Booking Distribution</h4>
-          <p>Chart will be displayed here</p>
-        </div>
-        <div className="chart-placeholder">
-          <h4>Popular Time Slots</h4>
-          <p>Chart will be displayed here</p>
-        </div>
-        <div className="chart-placeholder">
-          <h4>Customer Satisfaction</h4>
-          <p>Chart will be displayed here</p>
-        </div>
-      </div>
-    </div>
-  );
+  // Enhanced prediction data with interactive features
+  const predictionMetrics = [
+    { 
+      id: 'bookings',
+      metric: 'Bookings Next Week', 
+      current: 285, 
+      predicted: 312, 
+      confidence: 87, 
+      trend: 'up',
+      factors: ['Peak season approaching', 'New court opening', 'Marketing campaign'],
+      details: {
+        breakdown: [
+          { day: 'Mon', predicted: 42, confidence: 89 },
+          { day: 'Tue', predicted: 38, confidence: 85 },
+          { day: 'Wed', predicted: 45, confidence: 91 },
+          { day: 'Thu', predicted: 48, confidence: 88 },
+          { day: 'Fri', predicted: 52, confidence: 85 },
+          { day: 'Sat', predicted: 48, confidence: 83 },
+          { day: 'Sun', predicted: 39, confidence: 87 }
+        ]
+      }
+    },
+    { 
+      id: 'revenue',
+      metric: 'Revenue Forecast (₹)', 
+      current: 14250, 
+      predicted: 16800, 
+      confidence: 82, 
+      trend: 'up',
+      factors: ['Premium court additions', 'Price optimization', 'Corporate bookings'],
+      details: {
+        breakdown: [
+          { day: 'Mon', predicted: 2100, confidence: 84 },
+          { day: 'Tue', predicted: 1950, confidence: 80 },
+          { day: 'Wed', predicted: 2400, confidence: 86 },
+          { day: 'Thu', predicted: 2600, confidence: 82 },
+          { day: 'Fri', predicted: 2900, confidence: 79 },
+          { day: 'Sat', predicted: 2750, confidence: 81 },
+          { day: 'Sun', predicted: 2100, confidence: 85 }
+        ]
+      }
+    },
+    { 
+      id: 'users',
+      metric: 'New User Signups', 
+      current: 45, 
+      predicted: 38, 
+      confidence: 79, 
+      trend: 'down',
+      factors: ['Market saturation', 'Competitor activity', 'Seasonal decline'],
+      details: {
+        breakdown: [
+          { day: 'Mon', predicted: 6, confidence: 78 },
+          { day: 'Tue', predicted: 5, confidence: 82 },
+          { day: 'Wed', predicted: 7, confidence: 76 },
+          { day: 'Thu', predicted: 4, confidence: 80 },
+          { day: 'Fri', predicted: 8, confidence: 75 },
+          { day: 'Sat', predicted: 5, confidence: 81 },
+          { day: 'Sun', predicted: 3, confidence: 83 }
+        ]
+      }
+    },
+    { 
+      id: 'retention',
+      metric: 'Customer Retention (%)', 
+      current: 78, 
+      predicted: 84, 
+      confidence: 91, 
+      trend: 'up',
+      factors: ['Loyalty program launch', 'Service improvements', 'Facility upgrades'],
+      details: {
+        breakdown: [
+          { segment: 'New Users', predicted: 72, confidence: 88 },
+          { segment: 'Regular Users', predicted: 89, confidence: 94 },
+          { segment: 'Premium Users', predicted: 95, confidence: 92 },
+          { segment: 'Corporate', predicted: 87, confidence: 90 }
+        ]
+      }
+    }
+  ];
 
-  const renderContent = () => {
+  const totalBookings = courtBookingData.reduce((sum, court) => sum + court.bookings, 0);
+  const totalRevenue = courtBookingData.reduce((sum, court) => sum + court.revenue, 0);
+  const averageRating = (courtBookingData.reduce((sum, court) => sum + court.rating, 0) / courtBookingData.length).toFixed(1);
+  const averageUtilization = Math.round(courtBookingData.reduce((sum, court) => sum + court.utilization, 0) / courtBookingData.length);
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: Eye },
+    { id: 'performance', label: 'Performance', icon: BarChart3 },
+    { id: 'insights', label: 'Customer Insights', icon: Users },
+    { id: 'predictions', label: 'Predictions', icon: Zap }
+  ];
+
+  const performanceFilters = [
+    { id: 'all', label: 'All Time' },
+    { id: 'week', label: 'Last Week' },
+    { id: 'month', label: 'Last Month' },
+    { id: 'year', label: 'Last Year' }
+  ];
+
+  const ratingFilters = [
+    { id: 'all', label: 'All Ratings' },
+    { id: '5', label: '5 Stars' },
+    { id: '4', label: '4+ Stars' },
+    { id: '3', label: '3+ Stars' },
+    { id: '2', label: '2+ Stars' },
+    { id: '1', label: '1+ Stars' }
+  ];
+
+  const renderStars = (rating) =>
+    Array.from({ length: 5 }, (_, i) => (
+      <Star key={i} className={i < rating ? 'star-filled' : 'star-empty'} />
+    ));
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'Confirmed': return 'status-confirmed';
+      case 'Pending': return 'status-pending';
+      case 'Cancelled': return 'status-cancelled';
+      default: return 'status-default';
+    }
+  };
+
+  const getTrendIcon = (trend) => {
+    switch (trend) {
+      case 'up': return <TrendingUp className="trend-up" />;
+      case 'down': return <TrendingDown className="trend-down" />;
+      default: return <Activity className="trend-stable" />;
+    }
+  };
+
+  const getFilteredReviews = () => {
+    if (ratingFilter === 'all') return customerReviews;
+    const minRating = parseInt(ratingFilter);
+    return customerReviews.filter(review => review.rating >= minRating);
+  };
+
+  const COLORS = ['#2563eb', '#16a34a', '#dc2626', '#ca8a04', '#9333ea'];
+
+  const renderTabContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return renderDashboard();
-      case 'venues':
-        return renderVenues();
-      case 'bookings':
-        return renderBookings();
-      case 'analytics':
-        return renderAnalytics();
+      case 'overview':
+        return (
+          <div className="overview-grid">
+            <div className="card">
+              <div className="card-header">
+                <h3>Top Performing Courts</h3>
+              </div>
+              <div className="card-body">
+                {courtBookingData.slice(0, 6).map((court, index) => (
+                  <div key={court.court} className="performance-item">
+                    <div className="performance-rank">{index + 1}</div>
+                    <div className="performance-info">
+                      <div className="performance-title">{court.court}</div>
+                      <div className="performance-subtitle">{court.venue} • {court.sport}</div>
+                    </div>
+                    <div className="performance-stats">
+                      <div className="stat-value">{court.bookings}</div>
+                      <div className="stat-label">bookings</div>
+                    </div>
+                    <div className="performance-stats">
+                      <div className="stat-value">₹{court.revenue.toLocaleString()}</div>
+                      <div className="stat-label">revenue</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="card-header">
+                <h3>Recent Bookings</h3>
+              </div>
+              <div className="card-body">
+                {recentBookings.map((booking) => (
+                  <div key={booking.id} className="booking-item">
+                    <div className="booking-info">
+                      <div className="booking-user">{booking.user}</div>
+                      <div className="booking-venue">{booking.venue} - {booking.court}</div>
+                      <div className="booking-time">{booking.date} • {booking.time}</div>
+                    </div>
+                    <div className="booking-status">
+                      <span className={getStatusClass(booking.status)}>
+                        {booking.status}
+                      </span>
+                      <div className="booking-amount">₹{booking.amount}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'performance':
+        return (
+          <div className="performance-section">
+            <div className="performance-filters">
+              <div className="filter-group">
+                <Filter className="filter-icon" />
+                <span className="filter-label">Time Period:</span>
+                <div className="filter-buttons">
+                  {performanceFilters.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setPerformanceFilter(filter.id)}
+                      className={`filter-button ${performanceFilter === filter.id ? 'active' : ''}`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="performance-grid">
+              <div className="card chart-card">
+                <div className="card-header">
+                  <h3>Hourly Booking Trends</h3>
+                </div>
+                <div className="card-body">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <AreaChart data={hourlyBookings}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="hour" />
+                      <YAxis />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="bookings" stroke="#2563eb" fill="#dbeafe" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="card chart-card">
+                <div className="card-header">
+                  <h3>Monthly Revenue Trend</h3>
+                </div>
+                <div className="card-body">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={monthlyTrends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="revenue" stroke="#16a34a" strokeWidth={3} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="card chart-card">
+                <div className="card-header">
+                  <h3>Venue Performance Comparison</h3>
+                </div>
+                <div className="card-body">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={venuePerformance}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="venue" angle={-45} textAnchor="end" height={100} />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="utilization" fill="#2563eb" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="card chart-card">
+                <div className="card-header">
+                  <h3>Sports Distribution</h3>
+                </div>
+                <div className="card-body">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={sportsDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ sport, percentage }) => `${sport} ${percentage}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                      >
+                        {sportsDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'insights':
+        return (
+          <div className="insights-section">
+            <div className="insights-filters">
+              <div className="filter-group">
+                <Star className="filter-icon" />
+                <span className="filter-label">Filter by Rating:</span>
+                <div className="filter-buttons">
+                  {ratingFilters.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setRatingFilter(filter.id)}
+                      className={`filter-button ${ratingFilter === filter.id ? 'active' : ''}`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="insights-grid">
+              <div className="card reviews-card">
+                <div className="card-header">
+                  <h3>Customer Reviews ({getFilteredReviews().length} reviews)</h3>
+                </div>
+                <div className="card-body">
+                  {getFilteredReviews().map((review) => (
+                    <div key={review.id} className="review-item">
+                      <div className="review-header">
+                        <div className="review-user">
+                          <div className="user-name">{review.user}</div>
+                          {review.verified && <span className="verified-badge">Verified</span>}
+                        </div>
+                        <div className="review-date">{review.date}</div>
+                      </div>
+                      <div className="review-rating">
+                        <div className="stars">{renderStars(review.rating)}</div>
+                        <span className="rating-number">({review.rating}/5)</span>
+                      </div>
+                      <div className="review-venue">{review.venue} - {review.court}</div>
+                      <div className="review-comment">{review.comment}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'predictions':
+        return (
+          <div className="predictions-section">
+            <div className="prediction-overview">
+              <Brain className="prediction-brain-icon" />
+              <h2>AI-Powered Predictive Analytics</h2>
+              <p>Machine learning insights and forecasting for the next 7 days</p>
+            </div>
+            
+            <div className="predictions-grid">
+              {predictionMetrics.map((pred, index) => (
+                <div 
+                  key={index} 
+                  className={`prediction-card ${selectedPrediction === pred.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedPrediction(selectedPrediction === pred.id ? null : pred.id)}
+                >
+                  <div className="prediction-header">
+                    <div className="prediction-metric">{pred.metric}</div>
+                    <div className="prediction-trend">{getTrendIcon(pred.trend)}</div>
+                  </div>
+                  <div className="prediction-values">
+                    <div className="current-value">
+                      <span className="value-label">Current</span>
+                      <span className="value-number">{pred.current.toLocaleString()}</span>
+                    </div>
+                    <div className="predicted-value">
+                      <span className="value-label">Predicted</span>
+                      <span className="value-number">{pred.predicted.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="confidence-bar">
+                    <div className="confidence-label">Confidence: {pred.confidence}%</div>
+                    <div className="confidence-fill">
+                      <div 
+                        className="confidence-progress" 
+                        style={{ width: `${pred.confidence}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="prediction-factors">
+                    <div className="factors-label">Key Factors:</div>
+                    <ul className="factors-list">
+                      {pred.factors.map((factor, i) => (
+                        <li key={i}>{factor}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {selectedPrediction === pred.id && (
+                    <div className="prediction-details">
+                      <div className="details-header">
+                        <Target className="details-icon" />
+                        <span>Detailed Breakdown</span>
+                      </div>
+                      <div className="details-chart">
+                        <ResponsiveContainer width="100%" height={200}>
+                          <BarChart data={pred.details.breakdown}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey={pred.id === 'retention' ? 'segment' : 'day'} />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="predicted" fill="#3b82f6" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="click-hint">
+                    {selectedPrediction === pred.id ? 'Click to collapse' : 'Click for detailed breakdown'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
       default:
-        return renderDashboard();
+        return null;
     }
   };
 
   return (
-    <div className="owner-home-page">
-      <Header showNavigation={false} />
-      <div className="owner-container">
-        <div className="owner-sidebar">
-          <div className="owner-profile">
-            <div className="profile-avatar">
-              <img src={getAvatarUrl()} alt="Owner" onError={handleAvatarError} />
+    <div className="dashboard">
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <div className="header-content">
+            <div>
+              <h1>QuickCourt Analytics Dashboard</h1>
+              <p>Comprehensive insights and performance analytics</p>
             </div>
-            <h3>Venue Owner</h3>
-            <p>Manage your venues and bookings</p>
+            <div className="user-profile">
+              <div className="profile-info">
+                <img src={displayAvatar} alt={displayName} className="profile-avatar" />
+                <div className="profile-details">
+                  <div className="profile-name">{displayName}</div>
+                  {/* <div className="profile-email">{displayEmail}</div> */}
+                </div>
+              </div>
+              <button onClick={handleLogout} className="logout-button">
+                <LogOut className="logout-icon" />
+                Logout
+              </button>
+            </div>
           </div>
-          
-          <nav className="owner-nav">
-            <button 
-              className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              📊 Dashboard
-            </button>
-            <button 
-              className={`nav-item ${activeTab === 'venues' ? 'active' : ''}`}
-              onClick={() => setActiveTab('venues')}
-            >
-              🏟️ My Venues
-            </button>
-            <button 
-              className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
-              onClick={() => setActiveTab('bookings')}
-            >
-              📅 Bookings
-            </button>
-            <button 
-              className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('analytics')}
-            >
-              📈 Analytics
-            </button>
-          </nav>
         </div>
 
-        <div className="owner-main">
-          <div className="main-header">
-            <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <div className="metric-icon-container">
+              <Calendar className="metric-icon blue" />
+            </div>
+            <div className="metric-content">
+              <div className="metric-label">Total Revenue</div>
+              <div className="metric-value">₹{totalRevenue.toLocaleString()}</div>
+              <div className="metric-change positive">+18% from last month</div>
+            </div>
           </div>
-          {renderContent()}
+
+          <div className="metric-card">
+            <div className="metric-icon-container">
+              <Activity className="metric-icon orange" />
+            </div>
+            <div className="metric-content">
+              <div className="metric-label">Avg Utilization</div>
+              <div className="metric-value">{averageUtilization}%</div>
+              <div className="metric-change neutral">+2% from last month</div>
+            </div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-icon-container">
+              <Star className="metric-icon purple" />
+            </div>
+            <div className="metric-content">
+              <div className="metric-label">Avg Rating</div>
+              <div className="metric-value">{averageRating}</div>
+              <div className="metric-change positive">+0.3 from last month</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="tabs-container">
+          <div className="tabs">
+            {tabs.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+                >
+                  <IconComponent className="tab-icon" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="tab-content">
+          {renderTabContent()}
         </div>
       </div>
     </div>

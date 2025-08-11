@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import './LoginPage.css';
+import { CloudCog } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -23,12 +24,15 @@ const LoginPage = () => {
       if (result?.success) {
         // Get the user role from localStorage which was set by AuthContext
         const userRole = localStorage.getItem('userRole');
-        
+        console.log(userRole);
+        console.log(userRole == 'owner' ? 'Owner role detected' : 'User role detected');
         // Navigate based on role
         if (userRole === 'owner') {
           navigate('/owner-home');
-        } else {
-          navigate('/home');
+        } else if(userRole ==='admin') {
+          navigate('/admin-home');
+        }else{
+           navigate('/home');
         }
       } else {
         setError(result?.error || 'Login failed. Please try again.');
