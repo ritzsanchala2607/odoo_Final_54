@@ -17,11 +17,13 @@ const Header = ({ showNavigation = false }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
-  const { isAuthenticated, user, logout } = useAuth();
-  const [userRole, setUserRole] = useState(null);
-  const [userPoints, setUserPoints] = useState(0);
+
+  const { isAuthenticated, logout, user, refreshUserData } = useAuth();
+  const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || null);
+  const [userPoints, setUserPoints] = useState(localStorage.getItem('userPoints') || 0);
   const coinFrames = React.useMemo(() => [coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9], []);
   const [coinFrameIdx, setCoinFrameIdx] = useState(0);
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
@@ -67,9 +69,12 @@ const Header = ({ showNavigation = false }) => {
 
 
   useEffect(() => {
-    setUserRole(localStorage.getItem('userRole'));
-    setUserPoints(localStorage.getItem('userPoints') || 0);
-  }, []);
+    // This effect will run whenever the user or isAuthenticated changes
+    if (isAuthenticated) {
+      setUserRole(localStorage.getItem('userRole'));
+      setUserPoints(localStorage.getItem('userPoints') || 0);
+    }
+  }, [isAuthenticated, user]);
 
   const navigationItems = [
     { label: 'Home', path: '/home', requiresAuth: false },
