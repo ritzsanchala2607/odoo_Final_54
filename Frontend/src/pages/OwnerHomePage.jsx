@@ -1,6 +1,6 @@
-import { PlusCircle, MapPin, X } from 'lucide-react';
+import { PlusCircle, MapPin, X, Edit, Trash2, Plus } from 'lucide-react';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './OwnerHomePage.css';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -14,109 +14,58 @@ import {
   LogOut, User, Filter, Target, Brain} from 'lucide-react';
 
 const OwnerHomePage = () => {
-    const [myCourts] = useState([
-    { id: 1, name: 'Court A', venue: 'Arena Sports Complex', sport: 'Badminton', price: '₹500/hr', status: 'Active' },
-    { id: 2, name: 'Court B', venue: 'Arena Sports Complex', sport: 'Tennis', price: '₹600/hr', status: 'Active' },
-    { id: 3, name: 'Field 1', venue: 'City Turf', sport: 'Football', price: '₹800/hr', status: 'Inactive' },
-  ]);
-
-    const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [performanceFilter, setPerformanceFilter] = useState('all');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [selectedPrediction, setSelectedPrediction] = useState(null);
 
+  // Venues state
+  const [venues, setVenues] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-const [newVenue, setNewVenue] = useState({
-  name: '',
-  slug: '',
-  description: '',
-  address: '',
-  city: '',
-  latitude: '',
-  longitude: '',
-  starting_price: '',
-  maxCourts: 1
-});
+  // Courts state
+  const [courts, setCourts] = useState([]);
+  const [loadingCourts, setLoadingCourts] = useState(false);
+  const [showCourtModal, setShowCourtModal] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [editingCourt, setEditingCourt] = useState(null);
+  const [showCourtForm, setShowCourtForm] = useState(false);
 
-const handleVenueChange = (e) => {
-  const { name, value } = e.target;
-  setNewVenue(prev => ({ ...prev, [name]: value }));
-
-  // Auto-create slug when user types name
-  if (name === 'name') {
-    const slugValue = value
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
-    setNewVenue(prev => ({ ...prev, slug: slugValue }));
-  }
-};
-
-const handleVenueSubmit = async (e) => {
-  e.preventDefault();
-  
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('/api/venues', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        name: newVenue.name,
-        slug: newVenue.slug,
-        description: newVenue.description,
-        address: newVenue.address,
-        city: newVenue.city,
-        latitude: parseFloat(newVenue.latitude),
-        longitude: parseFloat(newVenue.longitude),
-        starting_price: parseFloat(newVenue.starting_price)
-      })
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      alert('Venue created successfully!');
-      setShowVenueModal(false);
-      setNewVenue({
-        name: '',
-        slug: '',
-        description: '',
-        address: '',
-        city: '',
-        latitude: '',
-        longitude: '',
-        starting_price: '',
-        maxCourts: 1
-      });
-      // Refresh venues list
-      fetchVenues();
-    } else {
-      const error = await response.json();
-      alert(`Error creating venue: ${error.message || 'Unknown error'}`);
-    }
-  } catch (error) {
-    console.error('Error creating venue:', error);
-    alert('Failed to create venue. Please try again.');
-  }
-};
-
+  // Venue modal state
   const [showVenueModal, setShowVenueModal] = useState(false);
+  const [newVenue, setNewVenue] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    address: '',
+    city: '',
+    latitude: '',
+    longitude: '',
+    starting_price: '',
+    maxCourts: 1
+  });
 
+  // Court form state
+  const [newCourt, setNewCourt] = useState({
+    name: "",
+    sport_type: "",
+    price_per_hour: "",
+    price_per_person: "",
+    allow_per_hour: true,
+    allow_per_person: false,
+    refund_ratio_override: "",
+    capacity: 1,
+    is_active: true
+  });
 
-
-  // Get the current user from AuthContext
-
-
-  // Fallback for missing user data
+  // User display variables
   const displayName = user?.full_name || user?.name || user?.email || 'Owner';
   const displayEmail = user?.email || '';
   const displayAvatar = user?.avatar_url || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
 
-  const { logout } = useAuth();
-  const navigate = useNavigate();
+  // Logout handler
   const handleLogout = async () => {
     try {
       await logout();
@@ -125,122 +74,262 @@ const handleVenueSubmit = async (e) => {
       console.error('Logout failed:', err);
     }
 
+
+
     console.log('Logout clicked');
 
+
   };
-  
-  // Venues state
-const [venues, setVenues] = useState([]);
-const [loading, setLoading] = useState(false);
 
-// Fetch venues from API
-const fetchVenues = async () => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('/api/venues', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      setVenues(result.rows || result || []);
-    } else {
-      console.error('Failed to fetch venues');
+  // Fetch venues and courts on component mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchVenues();
+      fetchCourts();
     }
-  } catch (error) {
-    console.error('Error fetching venues:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  }, [user?.id]);
 
-// Fetch venues on component mount
-React.useEffect(() => {
-  fetchVenues();
-}, []);
-
-// const [showVenueModal, setShowVenueModal] = useState(false);
-const [showCourtModal, setShowCourtModal] = useState(false);
-
-const [selectedVenue, setSelectedVenue] = useState(null);
-// const [newCourt, setNewCourt] = useState({ courtName: "", sport: "", capacity: "", price: "" });
-const [newCourt, setNewCourt] = useState({
-  name: "",
-  sport_type: "",
-  price_per_hour: "",
-  price_per_person: "",
-  allow_per_hour: true,
-  allow_per_person: false,
-  refund_ratio_override: "",
-  capacity: 1,
-  is_active: true
-});
-const handleCourtChange = (e) => {
-  const { name, value } = e.target;
-  setNewCourt((prev) => ({ ...prev, [name]: value }));
-};
-
-
-const openAddCourtModal = (venueId) => {
-  const venue = venues.find(v => v.id === venueId);
-  setSelectedVenue(venue);
-  setShowCourtModal(true);
-};
-
-const handleCourtSubmit = async (e) => {
-  e.preventDefault();
-  if (!selectedVenue) return;
-
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('/api/courts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        venue_id: selectedVenue.id,
-        name: newCourt.name,
-        sport_type: newCourt.sport_type,
-        price_per_hour: parseFloat(newCourt.price_per_hour),
-        price_per_person: newCourt.price_per_person ? parseFloat(newCourt.price_per_person) : null,
-        allow_per_hour: newCourt.allow_per_hour,
-        allow_per_person: newCourt.allow_per_person,
-        refund_ratio_override: newCourt.refund_ratio_override ? parseFloat(newCourt.refund_ratio_override) : null,
-        capacity: parseInt(newCourt.capacity),
-        is_active: newCourt.is_active
-      })
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      alert('Court created successfully!');
-      setShowCourtModal(false);
-      setNewCourt({
-        name: "",
-        sport_type: "",
-        price_per_hour: "",
-        price_per_person: "",
-        allow_per_hour: true,
-        allow_per_person: false,
-        refund_ratio_override: "",
-        capacity: 1,
-        is_active: true
+  // Fetch all courts for the owner
+  const fetchCourts = async () => {
+    setLoadingCourts(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/courts?owner_id=${encodeURIComponent(user?.id || '')}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      // Optionally refresh courts list here
-    } else {
-      const error = await response.json();
-      alert(`Error creating court: ${error.message || 'Unknown error'}`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        setCourts(result.courts || []);
+      } else {
+        console.error('Failed to fetch courts');
+      }
+    } catch (error) {
+      console.error('Error fetching courts:', error);
+    } finally {
+      setLoadingCourts(false);
     }
-  } catch (error) {
-    console.error('Error creating court:', error);
-    alert('Failed to create court. Please try again.');
-  }
-};
+  };
+
+  // Fetch venues from API
+  const fetchVenues = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/venues?owner_id=${encodeURIComponent(user?.id || '')}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setVenues(result.rows || result || []);
+      } else {
+        console.error('Failed to fetch venues');
+      }
+    } catch (error) {
+      console.error('Error fetching venues:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Court CRUD operations
+  const createCourt = async (courtData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/courts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(courtData)
+      });
+
+      if (response.ok) {
+        alert('Court created successfully!');
+        fetchCourts(); // Refresh courts list
+        setShowCourtForm(false);
+        setEditingCourt(null);
+      } else {
+        const error = await response.json();
+        alert(`Error creating court: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error creating court:', error);
+      alert('Failed to create court. Please try again.');
+    }
+  };
+
+  const updateCourt = async (courtId, courtData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/courts/${courtId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(courtData)
+      });
+
+      if (response.ok) {
+        alert('Court updated successfully!');
+        fetchCourts(); // Refresh courts list
+        setShowCourtForm(false);
+        setEditingCourt(null);
+      } else {
+        const error = await response.json();
+        alert(`Error updating court: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error updating court:', error);
+      alert('Failed to update court. Please try again.');
+    }
+  };
+
+  const deleteCourt = async (courtId) => {
+    if (!confirm('Are you sure you want to delete this court?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/courts/${courtId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Court deleted successfully!');
+        fetchCourts(); // Refresh courts list
+      } else {
+        const error = await response.json();
+        alert(`Error deleting court: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting court:', error);
+      alert('Failed to delete court. Please try again.');
+    }
+  };
+
+  // Handle venue form changes
+  const handleVenueChange = (e) => {
+    const { name, value } = e.target;
+    setNewVenue(prev => ({ ...prev, [name]: value }));
+
+    // Auto-create slug when user types name
+    if (name === 'name') {
+      const slugValue = value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+      setNewVenue(prev => ({ ...prev, slug: slugValue }));
+    }
+  };
+
+  // Handle venue form submission
+  const handleVenueSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/venues', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: newVenue.name,
+          slug: newVenue.slug,
+          description: newVenue.description,
+          address: newVenue.address,
+          city: newVenue.city,
+          latitude: parseFloat(newVenue.latitude),
+          longitude: parseFloat(newVenue.longitude),
+          starting_price: parseFloat(newVenue.starting_price)
+        })
+      });
+
+      if (response.ok) {
+        alert('Venue created successfully!');
+        setShowVenueModal(false);
+        setNewVenue({
+          name: '',
+          slug: '',
+          description: '',
+          address: '',
+          city: '',
+          latitude: '',
+          longitude: '',
+          starting_price: '',
+          maxCourts: 1
+        });
+        fetchVenues(); // Refresh venues list
+      } else {
+        const error = await response.json();
+        alert(`Error creating venue: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error creating venue:', error);
+      alert('Failed to create venue. Please try again.');
+    }
+  };
+
+  // Handle court form changes
+  const handleCourtChange = (e) => {
+    const { name, value } = e.target;
+    setNewCourt((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle court form submission
+  const handleCourtSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const courtData = {
+      name: formData.get('name'),
+      sport_type: formData.get('sport_type'),
+      price_per_hour: parseFloat(formData.get('price_per_hour')),
+      price_per_person: parseFloat(formData.get('price_per_person')) || null,
+      capacity: parseInt(formData.get('capacity')),
+      allow_per_hour: formData.get('allow_per_hour') === 'true',
+      allow_per_person: formData.get('allow_per_person') === 'true',
+      venue_id: selectedVenue?.id || editingCourt?.venue_id || formData.get('venue_id')
+    };
+
+    if (editingCourt) {
+      updateCourt(editingCourt.id, courtData);
+    } else {
+      createCourt(courtData);
+    }
+  };
+
+  // Open add court modal for a specific venue
+  const openAddCourtModal = (venueId) => {
+    const venue = venues.find(v => v.id === venueId);
+    setSelectedVenue(venue);
+    setShowCourtForm(true);
+  };
+
+  // Open edit court modal
+  const openEditCourt = (court) => {
+    setEditingCourt(court);
+    setSelectedVenue(null);
+    setShowCourtForm(true);
+  };
+
+
+  // Open create court modal
+  const openCreateCourt = () => {
+    setEditingCourt(null);
+    setSelectedVenue(null);
+    setShowCourtForm(true);
+  };
 
 
   // Mock data
@@ -751,265 +840,122 @@ const handleCourtSubmit = async (e) => {
 
       case 'mycourts':
         return (
-          <div className="mycourts-section">
-            <div className="mycourts-header">
+          <div className="courts-content">
+            <div className="section-header">
               <h3>My Courts</h3>
+              <button className="add-court-btn" onClick={openCreateCourt}>
+                <Plus size={16} />
+                Add Court
+              </button>
             </div>
+
             <div className="courts-list">
-              {myCourts.map((court) => (
-                <div key={court.id} className="court-card">
-                  <div className="court-info">
-                    <h4>{court.name}</h4>
-                    <p><MapPin size={14} /> {court.venue}</p>
-                    <p>Sport: {court.sport}</p>
-                    <p>Price: {court.price}</p>
+              {loadingCourts ? (
+                <div className="loading">Loading courts...</div>
+              ) : courts.length === 0 ? (
+                <div className="no-courts">No courts found. Add courts to your venues!</div>
+              ) : (
+                courts.map((court) => (
+                  <div key={court.id} className="court-card">
+                    <div className="court-info">
+                      <h4>{court.name}</h4>
+                      <p><strong>Venue:</strong> {court.venue?.name || 'Unknown Venue'}</p>
+                      <p><strong>Sport:</strong> {court.sport_type}</p>
+                      <p><strong>Price per hour:</strong> ₹{court.price_per_hour}</p>
+                      {court.price_per_person && (
+                        <p><strong>Price per person:</strong> ₹{court.price_per_person}</p>
+                      )}
+                      <p><strong>Capacity:</strong> {court.capacity} people</p>
+                      <p><strong>Status:</strong> 
+                        <span className={`status-${court.is_active ? 'active' : 'inactive'}`}>
+                          {court.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="court-actions">
+                      <button 
+                        className="edit-btn"
+                        onClick={() => openEditCourt(court)}
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </button>
+                      <button 
+                        className="delete-btn"
+                        onClick={() => deleteCourt(court.id)}
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <span className={`court-status ${court.status.toLowerCase()}`}>{court.status}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         );
 
-        case 'venues':
-  return (
-    <div className="venues-section">
-      <div className="venues-header">
-        <h3>My Venues</h3>
-        <button className="new-venue-btn" onClick={() => setShowVenueModal(true)}>
-          <PlusCircle size={18} /> Create / Open New Venue
-        </button>
-      </div>
-
-      <div className="venue-list">
-        {loading ? (
-          <div className="loading">Loading venues...</div>
-        ) : venues.length === 0 ? (
-          <div className="no-venues">No venues found. Create your first venue!</div>
-        ) : (
-          venues.map((venue) => (
-            <div key={venue.id} className="venue-card">
-              <div className="venue-info">
-                <h4>{venue.name}</h4>
-                <p><MapPin size={14} /> {venue.city || venue.address}</p>
-                <p>Status: {venue.status}</p>
-                <p>Starting Price: ₹{venue.starting_price}/hr</p>
-              </div>
-
-              <div className="venue-actions">
-                <button
-                  onClick={() => openAddCourtModal(venue.id)}
-                  disabled={venue.status !== 'approved'}
-                >
-                  Add Court
-                </button>
-              </div>
+      case 'venues':
+        return (
+          <div className="venues-section">
+            <div className="venues-header">
+              <h3>My Venues</h3>
+              <button className="new-venue-btn" onClick={() => setShowVenueModal(true)}>
+                <PlusCircle size={18} /> Create New Venue
+              </button>
             </div>
-          ))
-        )}
-      </div>
 
-     
-      {showVenueModal && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <div className="modal-header">
-        <h3>Create New Venue</h3>
-        <button className="close-btn" onClick={() => setShowVenueModal(false)}>
-          <X size={18} />
-        </button>
-      </div>
-      <form className="modal-form" onSubmit={handleVenueSubmit}>
-        
-        <label>Venue Name *</label>
-        <input type="text" name="name" value={newVenue.name} onChange={handleVenueChange} required />
+            <div className="venue-list">
+              {loading ? (
+                <div className="loading">Loading venues...</div>
+              ) : venues.length === 0 ? (
+                <div className="no-venues">No venues found. Create your first venue!</div>
+              ) : (
+                venues.map((venue) => (
+                  <div key={venue.id} className="venue-card">
+                    <div className="venue-info">
+                      <h4>{venue.name}</h4>
+                      <p><MapPin size={14} /> {venue.city || venue.address}</p>
+                      <p className="venue-courts">
+                        <strong>Courts:</strong> {venue.capacityInfo?.totalCourtsActive ?? 0}/{venue.capacityInfo?.totalCourtsAll ?? 0}
+                      </p>
+                      <p className="venue-capacity">
+                        <strong>Total Capacity:</strong> {venue.capacityInfo?.totalCapacityActive ?? 0}/{venue.capacityInfo?.totalCapacityAll ?? 0} people
+                      </p>
+                      <div className="venue-courts-info">
+                        {venue.capacityInfo?.courtTypes?.length ? (
+                          <p className="venue-sports">
+                            Sports: {venue.capacityInfo.courtTypes.join(', ')}
+                          </p>
+                        ) : null}
+                        {venue.capacityInfo?.averagePrice > 0 ? (
+                          <p className="venue-avg-price">
+                            Avg. Price: ₹{venue.capacityInfo.averagePrice}/hour
+                          </p>
+                        ) : null}
+                      </div>
+                      <p>Status: {venue.status}</p>
+                      <p>Starting Price: ₹{venue.starting_price}/hr</p>
+                    </div>
 
-        <label>Slug *</label>
-        <input type="text" name="slug" value={newVenue.slug} onChange={handleVenueChange} required />
-
-        <label>Description</label>
-        <textarea name="description" value={newVenue.description} onChange={handleVenueChange}></textarea>
-
-        <label>Address *</label>
-        <input type="text" name="address" value={newVenue.address} onChange={handleVenueChange} required />
-
-        <label>City *</label>
-        <input type="text" name="city" value={newVenue.city} onChange={handleVenueChange} required />
-
-        <div className="form-row">
-          <div>
-            <label>Latitude *</label>
-            <input type="number" step="any" name="latitude" value={newVenue.latitude} onChange={handleVenueChange} required />
+                    <div className="venue-actions">
+                      <button
+                        onClick={() => openAddCourtModal(venue.id)}
+                        disabled={venue.status !== 'approved'}
+                      >
+                        Add Court
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-          <div>
-            <label>Longitude *</label>
-            <input type="number" step="any" name="longitude" value={newVenue.longitude} onChange={handleVenueChange} required />
-          </div>
-        </div>
-
-        <label>Starting Price (₹/hr) *</label>
-        <input type="number" step="0.01" name="starting_price" value={newVenue.starting_price} onChange={handleVenueChange} required />
-
-        <label>Max Courts Allowed</label>
-        <input type="number" name="maxCourts" value={newVenue.maxCourts} onChange={handleVenueChange} min="1" required />
-
-        <div className="modal-actions">
-          <button type="submit" className="btn-primary">Save Venue</button>
-          <button type="button" className="btn-secondary" onClick={() => setShowVenueModal(false)}>Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
-
-
-     {showCourtModal && selectedVenue && (
-  <div className="modal-overlay">
-    <div className="modal">
-      <div className="modal-header">
-        <h3>Add Court to {selectedVenue.name}</h3>
-        <button className="close-btn" onClick={() => setShowCourtModal(false)}>
-          <X size={18} />
-        </button>
-      </div>
-      <form className="modal-form" onSubmit={handleCourtSubmit}>
-        
-        {/* Court Name */}
-        <label>Court Name *</label>
-        <input
-          type="text"
-          name="name"
-          value={newCourt.name}
-          onChange={handleCourtChange}
-          required
-        />
-
-        {/* Sport Type */}
-        <label>Sport Type *</label>
-        <select
-          name="sport_type"
-          value={newCourt.sport_type}
-          onChange={handleCourtChange}
-          required
-        >
-          <option value="">Select sport</option>
-          <option>Badminton</option>
-          <option>Tennis</option>
-          <option>Football</option>
-          <option>Basketball</option>
-          <option>Cricket</option>
-        </select>
-
-        {/* Price Per Hour */}
-        <label>Price Per Hour (₹) *</label>
-        <input
-          type="number"
-          step="0.01"
-          name="price_per_hour"
-          value={newCourt.price_per_hour}
-          onChange={handleCourtChange}
-          required={newCourt.allow_per_hour}
-          disabled={!newCourt.allow_per_hour}
-        />
-
-        {/* Price Per Person */}
-        <label>Price Per Person (₹)</label>
-        <input
-          type="number"
-          step="0.01"
-          name="price_per_person"
-          value={newCourt.price_per_person}
-          onChange={handleCourtChange}
-          required={newCourt.allow_per_person}
-          disabled={!newCourt.allow_per_person}
-        />
-
-        {/* Allow Booking Type */}
-        <div className="checkbox-group">
-          <label>
-            <input
-              type="checkbox"
-              name="allow_per_hour"
-              checked={newCourt.allow_per_hour}
-              onChange={(e) =>
-                setNewCourt((prev) => ({
-                  ...prev,
-                  allow_per_hour: e.target.checked
-                }))
-              }
-            />
-            Allow Per Hour Booking
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="allow_per_person"
-              checked={newCourt.allow_per_person}
-              onChange={(e) =>
-                setNewCourt((prev) => ({
-                  ...prev,
-                  allow_per_person: e.target.checked
-                }))
-              }
-            />
-            Allow Per Person Booking
-          </label>
-        </div>
-
-        {/* Refund Ratio */}
-        <label>Refund Ratio Override (%)</label>
-        <input
-          type="number"
-          step="0.01"
-          name="refund_ratio_override"
-          value={newCourt.refund_ratio_override}
-          onChange={handleCourtChange}
-          placeholder="Leave empty for default"
-        />
-
-        {/* Capacity */}
-        <label>Capacity *</label>
-        <input
-          type="number"
-          name="capacity"
-          min="1"
-          value={newCourt.capacity}
-          onChange={handleCourtChange}
-          required
-        />
-
-        {/* Active / Inactive */}
-        <label>Status *</label>
-        <select
-          name="is_active"
-          value={newCourt.is_active}
-          onChange={(e) =>
-            setNewCourt((prev) => ({
-              ...prev,
-              is_active: e.target.value === "true"
-            }))
-          }
-        >
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
-
-        {/* Actions */}
-        <div className="modal-actions">
-          <button type="submit" className="btn-primary">Save Court</button>
-          <button type="button" className="btn-secondary" onClick={() => setShowCourtModal(false)}>Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-)}
-
-    </div>
-  );
+        );
 
       default:
-        return null;
+        return <div>Select a tab</div>;
     }
   };
 
@@ -1095,6 +1041,210 @@ const handleCourtSubmit = async (e) => {
           {renderTabContent()}
         </div>
       </div>
+
+      {/* Venue Modal */}
+      {showVenueModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h3>Create New Venue</h3>
+              <button className="close-btn" onClick={() => setShowVenueModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <form className="modal-form" onSubmit={handleVenueSubmit}>
+              
+              <label>Venue Name *</label>
+              <input type="text" name="name" value={newVenue.name} onChange={handleVenueChange} required />
+
+              <label>Slug *</label>
+              <input type="text" name="slug" value={newVenue.slug} onChange={handleVenueChange} required />
+
+              <label>Description</label>
+              <textarea name="description" value={newVenue.description} onChange={handleVenueChange}></textarea>
+
+              <label>Address *</label>
+              <input type="text" name="address" value={newVenue.address} onChange={handleVenueChange} required />
+
+              <label>City *</label>
+              <input type="text" name="city" value={newVenue.city} onChange={handleVenueChange} required />
+
+              <div className="form-row">
+                <div>
+                  <label>Latitude *</label>
+                  <input type="number" step="any" name="latitude" value={newVenue.latitude} onChange={handleVenueChange} required />
+                </div>
+                <div>
+                  <label>Longitude *</label>
+                  <input type="number" step="any" name="longitude" value={newVenue.longitude} onChange={handleVenueChange} required />
+                </div>
+              </div>
+
+              <label>Starting Price (₹/hr) *</label>
+              <input type="number" step="0.01" name="starting_price" value={newVenue.starting_price} onChange={handleVenueChange} required />
+
+              <label>Max Courts Allowed</label>
+              <input type="number" name="maxCourts" value={newVenue.maxCourts} onChange={handleVenueChange} min="1" required />
+
+              <div className="modal-actions">
+                <button type="submit" className="btn-primary">Save Venue</button>
+                <button type="button" className="btn-secondary" onClick={() => setShowVenueModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Court Form Modal */}
+      {showCourtForm && (
+        <div className="modal-overlay">
+          <div className="modal-content court-form-modal">
+            <div className="modal-header">
+              <h3>{editingCourt ? 'Edit Court' : 'Add New Court'}</h3>
+              <button 
+                className="close-btn"
+                onClick={() => {
+                  setShowCourtForm(false);
+                  setEditingCourt(null);
+                  setSelectedVenue(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <form onSubmit={handleCourtSubmit} className="court-form">
+                <div className="form-group">
+                  <label htmlFor="name">Court Name *</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    defaultValue={editingCourt?.name || ''}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="venue_id">Venue *</label>
+                  <select
+                    id="venue_id"
+                    name="venue_id"
+                    defaultValue={editingCourt?.venue_id || selectedVenue?.id || ''}
+                    required
+                  >
+                    <option value="">Select Venue</option>
+                    {venues.filter(v => v.status === 'approved').map(venue => (
+                      <option key={venue.id} value={venue.id}>
+                        {venue.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="sport_type">Sport Type *</label>
+                  <select
+                    id="sport_type"
+                    name="sport_type"
+                    defaultValue={editingCourt?.sport_type || ''}
+                    required
+                  >
+                    <option value="">Select Sport</option>
+                    <option value="Badminton">Badminton</option>
+                    <option value="Tennis">Tennis</option>
+                    <option value="Football">Football</option>
+                    <option value="Basketball">Basketball</option>
+                    <option value="Cricket">Cricket</option>
+                    <option value="Table Tennis">Table Tennis</option>
+                    <option value="Squash">Squash</option>
+                    <option value="Volleyball">Volleyball</option>
+                  </select>
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="price_per_hour">Price per Hour (₹) *</label>
+                    <input
+                      type="number"
+                      id="price_per_hour"
+                      name="price_per_hour"
+                      min="0"
+                      step="0.01"
+                      defaultValue={editingCourt?.price_per_hour || ''}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label htmlFor="price_per_person">Price per Person (₹)</label>
+                    <input
+                      type="number"
+                      id="price_per_person"
+                      name="price_per_person"
+                      min="0"
+                      step="0.01"
+                      defaultValue={editingCourt?.price_per_person || ''}
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="capacity">Capacity (people) *</label>
+                  <input
+                    type="number"
+                    id="capacity"
+                    name="capacity"
+                    min="1"
+                    defaultValue={editingCourt?.capacity || 1}
+                    required
+                  />
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group checkbox-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        name="allow_per_hour"
+                        value="true"
+                        defaultChecked={editingCourt?.allow_per_hour !== false}
+                      />
+                      Allow per hour booking
+                    </label>
+                  </div>
+                  
+                  <div className="form-group checkbox-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        name="allow_per_person"
+                        value="true"
+                        defaultChecked={editingCourt?.allow_per_person === true}
+                      />
+                      Allow per person booking
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="form-actions">
+                  <button type="button" className="cancel-btn" onClick={() => {
+                    setShowCourtForm(false);
+                    setEditingCourt(null);
+                    setSelectedVenue(null);
+                  }}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="submit-btn">
+                    {editingCourt ? 'Update Court' : 'Create Court'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
