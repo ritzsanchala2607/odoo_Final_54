@@ -9,6 +9,7 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import VenueDetails from './pages/VenueDetails';
+import OwnerHomePage  from './pages/OwnerHomePage';
 import './App.css';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/venues" element={<VenuesPage />} />
+          <Route path="/owner-home" element = {<OwnerHomePage/>}/>
           <Route path="/mybookings" element={<MyBookingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/venue/:id" element={<VenueDetails />} />

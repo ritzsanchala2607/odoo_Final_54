@@ -22,9 +22,15 @@ const LoginPage = () => {
       );
 
       console.log(response.data); // Optional: for debugging
-
+      console.log(response.data.user.role);
       // If login succeeds
-      navigate('/home');
+      // navigate('/home');
+      if (response.data.user.role === 'owner') {
+        navigate('/owner-home'); // Owner-specific home page
+      } else {
+        navigate('/home'); // Normal user home page
+      }
+
     } catch (err) {
       console.error(err);
 

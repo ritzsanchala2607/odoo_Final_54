@@ -1,0 +1,290 @@
+/* Container */
+.owner-homepage {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 1.5rem; /* p-6 */
+}
+
+.owner-homepage-container {
+  max-width: 80rem; /* max-w-7xl */
+  margin: 0 auto;
+}
+
+/* Header */
+.owner-header {
+  margin-bottom: 2rem; /* mb-8 */
+}
+
+.owner-title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 700; /* font-bold */
+  color: #111827; /* text-gray-900 */
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.owner-subtitle {
+  color: #4b5563; /* text-gray-600 */
+}
+
+/* Metric Cards */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.5rem; /* gap-6 */
+}
+
+@media (min-width: 768px) {
+  .metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.metric-card {
+  background: white;
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 1.5rem; /* p-6 */
+}
+
+.metric-card-content {
+  display: flex;
+  align-items: center;
+}
+
+.metric-text {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.metric-icon {
+  height: 2rem;
+  width: 2rem;
+}
+
+/* Court Rankings */
+.court-ranking {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.court-ranking-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .court-ranking-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.court-ranking-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.court-ranking-filter {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.court-ranking-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.court-ranking-list {
+  padding: 1.5rem;
+}
+
+.court-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f9fafb; /* bg-gray-50 */
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.court-item:hover {
+  background: #f3f4f6; /* bg-gray-100 */
+}
+
+.court-item-index {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: #2563eb;
+  color: white;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.court-item-info {
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.court-item-title {
+  font-weight: 600;
+  color: #111827;
+}
+
+.court-item-subtitle {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.court-item-stats {
+  text-align: right;
+}
+
+.court-bookings {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.court-rating {
+  display: flex;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.court-rating span {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.court-revenue {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-left: 0.5rem;
+}
+
+/* Recent Feedback */
+.recent-feedback {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.recent-feedback-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.recent-feedback-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.recent-feedback-list {
+  padding: 1.5rem;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.feedback-item {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.feedback-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-user {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.feedback-meta {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.feedback-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.feedback-rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.feedback-rating-count {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.feedback-comment {
+  font-size: 0.875rem;
+  color: #374151;
+  font-style: italic;
+}
+
+.feedback-sport {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #e5e7eb;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+}
+
+/* Charts Section */
+.chart-card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.chart-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.chart-content {
+  padding: 1.5rem;
+}
