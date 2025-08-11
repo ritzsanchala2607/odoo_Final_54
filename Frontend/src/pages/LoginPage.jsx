@@ -29,8 +29,10 @@ const LoginPage = () => {
         // Navigate based on role
         if (userRole === 'owner') {
           navigate('/owner-home');
-        } else {
-          navigate('/home');
+        } else if(userRole ==='admin') {
+          navigate('/admin-home');
+        }else{
+           navigate('/home');
         }
       } else {
         setError(result?.error || 'Login failed. Please try again.');
