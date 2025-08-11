@@ -118,16 +118,24 @@ const RegisterPage = () => {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        // Generate OTP for verification
+        // Attempt to hit backend signup to trigger OTP email (best-effort)
+        try {
+          await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/register`, {
+            full_name: formData.username,
+            email: formData.email,
+            password: formData.password,
+            role: formData.role,
+          }, { withCredentials: true });
+        } catch (err) {
+          console.warn('Backend signup failed or unavailable. Proceeding to OTP step anyway.', err?.message);
+        }
+
+        // Generate OTP for demo-only fallback and move to verify page
         const otp = generateOTP();
-        console.log('Generated OTP:', otp);
+        console.log('Generated OTP (demo fallback):', otp);
 
-        // Simulate API call (frontend-only)
-        console.log('✅ Registration data ready for submission:', formData);
-
-        // Move to OTP verification step
-        setCurrentStep(2);
-
+        // Go to verify-otp page, pass email in query
+        navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
       } catch (error) {
         console.error('❌ Registration failed:', error);
         setErrors({ general: 'Registration failed. Please try again.' });
