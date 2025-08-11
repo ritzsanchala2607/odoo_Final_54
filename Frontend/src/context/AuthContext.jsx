@@ -71,13 +71,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUserData = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/me`, {
+        withCredentials: true
+      });
+      if (response.data.user) {
+        setUser(response.data.user);
+        return response.data.user;
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  };
+
   const value = {
     isAuthenticated,
     user,
     loading,
     login,
     logout,
-    checkAuthStatus
+    checkAuthStatus,
+    refreshUserData
   };
 
   return (

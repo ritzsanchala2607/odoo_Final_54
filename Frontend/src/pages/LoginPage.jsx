@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -11,10 +11,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+    
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
@@ -24,8 +25,8 @@ const LoginPage = () => {
 
       console.log(response.data); // Optional: for debugging
       console.log(response.data.user.role);
-      // If login succeeds
-      // navigate('/home');
+      
+      // If login succeeds, navigate based on role
       if (response.data.user.role === 'owner') {
          localStorage.setItem('userRole', 'owner');
         navigate('/owner-home'); // Owner-specific home page
@@ -52,14 +53,6 @@ const LoginPage = () => {
         // Authentication error
         setError(err.response?.data?.message || 'Login failed. Please try again.');
       }
-    setError('');
-    
-    const result = await login(email, password);
-    
-    if (result.success) {
-      navigate('/home');
-    } else {
-      setError(result.error);
     }
   };}
 

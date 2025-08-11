@@ -8,9 +8,14 @@ const Header = ({ showNavigation = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+
+  const { isAuthenticated, logout, user, refreshUserData } = useAuth();
+
+
   const { isAuthenticated, logout } = useAuth();
  const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
     onScroll();
@@ -18,14 +23,42 @@ const Header = ({ showNavigation = false }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    // Refresh user data when component mounts to ensure we have the latest avatar
+    if (isAuthenticated && user) {
+      refreshUserData();
+    }
+  }, [isAuthenticated, user, refreshUserData]);
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
+
+
+  const getAvatarUrl = () => {
+    if (user && user.avatar_url) {
+      // If avatar_url starts with '/', it's a relative path, otherwise it's a full URL
+      if (user.avatar_url.startsWith('/')) {
+        return `${import.meta.env.VITE_BACKEND_URL}${user.avatar_url}`;
+      }
+      return user.avatar_url;
+    }
+    // Fallback to default avatar
+    return '../assets/user_img.png';
+  };
+
+  const handleAvatarError = (e) => {
+    // If user's avatar fails to load, fallback to default
+    e.target.src = '../assets/user_img.png';
+  };
+
+
   useEffect(() => {
     setUserRole(localStorage.getItem('userRole'));
     setUserPoints(localStorage.getItem('userPoints') || 0);
   }, []);
+
   const navigationItems = [
     { label: 'Home', path: '/home' },
     { label: 'Venues', path: '/venues' },
@@ -83,7 +116,7 @@ const Header = ({ showNavigation = false }) => {
               {isAuthenticated ? (
                 <>
                   <div className="user-avatar" onClick={() => navigate('/profile')}>
-                    <img src="../assets/user_img.png" alt="User" />
+                    <img src={getAvatarUrl()} alt="User" onError={handleAvatarError} />
                   </div>
                   <button className="logout-btn" onClick={handleLogout}>
                     Logout

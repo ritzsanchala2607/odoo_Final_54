@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -6,19 +7,40 @@ import Avatar from '../components/Avatar';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
+  const { user, refreshUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState({
-    fullName: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    company: 'Tech Solutions Inc.',
-    position: 'Senior Manager',
-    location: 'New York, NY',
-    bio: 'Experienced professional with 8+ years in technology and business management. Passionate about innovation and team leadership.',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+    fullName: '',
+    email: '',
+    phone: '',
+    company: '',
+    position: '',
+    location: '',
+    bio: '',
+    avatar: ''
   });
   const [editData, setEditData] = useState({ ...profileData });
   const [bookings, setBookings] = useState([]);
+
+  // Fetch user profile data when component mounts
+  useEffect(() => {
+    if (user) {
+      const userProfile = {
+        fullName: user.full_name || 'User',
+        email: user.email || '',
+        phone: user.phone || '',
+        company: user.company || '',
+        position: user.position || '',
+        location: user.location || '',
+        bio: user.short_bio || '',
+        avatar: getAvatarUrl(user.avatar_url)
+      };
+      setProfileData(userProfile);
+      setEditData(userProfile);
+      setIsLoading(false);
+    }
+  }, [user]);
 
   // Mock API Call for Bookings
   useEffect(() => {
@@ -35,6 +57,37 @@ const ProfilePage = () => {
     fetchBookings();
   }, []);
 
+  const getAvatarUrl = (avatarUrl) => {
+    if (avatarUrl) {
+      // If avatar_url starts with '/', it's a relative path, otherwise it's a full URL
+      if (avatarUrl.startsWith('/')) {
+        return `${import.meta.env.VITE_BACKEND_URL}${avatarUrl}`;
+      }
+      return avatarUrl;
+    }
+    // Fallback to default avatar
+    return '../assets/user_img.png';
+  };
+
+  const handleAvatarError = (e) => {
+    // If user's avatar fails to load, fallback to default
+    e.target.src = '../assets/user_img.png';
+  };
+
+  // Show loading state if user data is not yet available
+  if (isLoading || !user) {
+    return (
+      <div className="profile-page">
+        <Header showNavigation />
+        <div className="profile-container fade-in">
+          <div className="loading-state">
+            <p>Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditData(prev => ({
@@ -43,10 +96,23 @@ const ProfilePage = () => {
     }));
   };
 
-  const handleSave = () => {
-    setProfileData(editData);
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+  const handleSave = async () => {
+    try {
+      // Here you would typically make an API call to update the user profile
+      // For now, we'll just update the local state and refresh user data
+      setProfileData(editData);
+      setIsEditing(false);
+      
+      // Refresh user data to ensure we have the latest information
+      if (refreshUserData) {
+        await refreshUserData();
+      }
+      
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -75,7 +141,6 @@ const ProfilePage = () => {
 
   // Booking filters
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
-  const completedBookings = bookings.filter(b => b.status === 'completed');
   const deletedBookings = bookings.filter(b => b.status === 'deleted');
   const recentBookings = bookings.slice(0, 3);
 
@@ -98,6 +163,7 @@ const ProfilePage = () => {
                 src={isEditing ? editData.avatar : profileData.avatar}
                 size="large"
                 alt={profileData.fullName}
+                onError={handleAvatarError}
               />
               {isEditing && (
                 <label className="avatar-upload-label">
