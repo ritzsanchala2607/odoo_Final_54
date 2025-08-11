@@ -10,8 +10,8 @@ const Header = ({ showNavigation = false }) => {
   const [scrolled, setScrolled] = useState(false);
 
   const { isAuthenticated, logout, user, refreshUserData } = useAuth();
- const [userRole, setUserRole] = useState(null);
-  const [userPoints, setUserPoints] = useState(0);
+  const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || null);
+  const [userPoints, setUserPoints] = useState(localStorage.getItem('userPoints') || 0);
 
 
 
@@ -56,9 +56,12 @@ const Header = ({ showNavigation = false }) => {
 
 
   useEffect(() => {
-    setUserRole(localStorage.getItem('userRole'));
-    setUserPoints(localStorage.getItem('userPoints') || 0);
-  }, []);
+    // This effect will run whenever the user or isAuthenticated changes
+    if (isAuthenticated) {
+      setUserRole(localStorage.getItem('userRole'));
+      setUserPoints(localStorage.getItem('userPoints') || 0);
+    }
+  }, [isAuthenticated, user]);
 
   const navigationItems = [
     { label: 'Home', path: '/home' },

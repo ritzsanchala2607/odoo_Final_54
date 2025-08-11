@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -11,48 +11,31 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
-        { email, password },
-        { withCredentials: true }
-      );
-
-      console.log(response.data); // Optional: for debugging
-      console.log(response.data.user.role);
+      const result = await login(email, password);
       
-      // If login succeeds, navigate based on role
-      if (response.data.user.role === 'owner') {
-         localStorage.setItem('userRole', 'owner');
-        navigate('/owner-home'); // Owner-specific home page
-      } else {
-          localStorage.setItem('userRole', 'user');
-            localStorage.setItem('userPoints', response.data.user.points || 500);
-        navigate('/home'); // Normal user home page
-      }
-
-    } catch (err) {
-      console.error(err);
-
-      // Check if it's a network/backend error vs authentication error
-      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
-        // Backend is not available, but we can still navigate
-        console.log('Backend unavailable, proceeding with frontend-only mode');
-        setError('Backend unavailable. Proceeding in demo mode.');
-
-        // Simulate successful login and navigate
-        setTimeout(() => {
+      if (result?.success) {
+        // Get the user role from localStorage which was set by AuthContext
+        const userRole = localStorage.getItem('userRole');
+        
+        // Navigate based on role
+        if (userRole === 'owner') {
+          navigate('/owner-home');
+        } else {
           navigate('/home');
-        }, 1500);
+        }
       } else {
-        // Authentication error
-        setError(err.response?.data?.message || 'Login failed. Please try again.');
+        setError(result?.error || 'Login failed. Please try again.');
       }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('An error occurred during login. Please try again.');
     }
   };
 
@@ -99,10 +82,12 @@ const LoginPage = () => {
               Log In
             </Button>
           </form>
-
-          <div className="login-footer">
-            <p>Don't have an account? <Link to="/register" className="register-link">Sign Up</Link></p>
-          </div>
+          <p className="signup-link">
+            Don't have an account?{' '}
+            <Link to="/register" className="signup-button">
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
