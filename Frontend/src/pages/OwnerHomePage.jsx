@@ -102,7 +102,9 @@ const OwnerHomePage = () => {
       
       if (response.ok) {
         const result = await response.json();
-        setCourts(result.courts || []);
+        // Filter out inactive courts (soft deleted)
+        const activeCourts = (result.courts || []).filter(court => court.is_active !== false);
+        setCourts(activeCourts);
       } else {
         console.error('Failed to fetch courts');
       }
@@ -206,7 +208,10 @@ const OwnerHomePage = () => {
 
       if (response.ok) {
         alert('Court deleted successfully!');
-        fetchCourts(); // Refresh courts list
+        // Remove the court from the local state immediately for better UX
+        setCourts(prevCourts => prevCourts.filter(court => court.id !== courtId));
+        // Also refresh from server to ensure consistency
+        fetchCourts();
       } else {
         const error = await response.json();
         alert(`Error deleting court: ${error.message || 'Unknown error'}`);
