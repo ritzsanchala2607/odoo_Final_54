@@ -8,9 +8,15 @@ const Header = ({ showNavigation = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+
   const { isAuthenticated, logout, user, refreshUserData } = useAuth();
  const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
+
+
+
+
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
     onScroll();
@@ -53,6 +59,7 @@ const Header = ({ showNavigation = false }) => {
     setUserRole(localStorage.getItem('userRole'));
     setUserPoints(localStorage.getItem('userPoints') || 0);
   }, []);
+
   const navigationItems = [
     { label: 'Home', path: '/home' },
     { label: 'Venues', path: '/venues' },
