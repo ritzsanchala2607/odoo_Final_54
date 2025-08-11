@@ -13,6 +13,7 @@ const VenuesPage = () => {
   const [priceRange, setPriceRange] = useState([0, 5500]);
   const [venueType, setVenueType] = useState('');
   const [rating, setRating] = useState('');
+  const [distanceFilters, setDistanceFilters] = useState([]); // ✅ Multiple distance selections
 
   const categories = ['All', 'Conference Halls', 'Meeting Rooms', 'Event Spaces', 'Auditoriums', 'Outdoor Venues'];
 
@@ -28,7 +29,8 @@ const VenuesPage = () => {
       description: 'State-of-the-art conference facility with modern amenities and professional staff.',
       available: true,
       rating: 4.5,
-      type: 'Indoor'
+      type: 'Indoor',
+      distance: 4 // km
     },
     {
       id: 2,
@@ -41,11 +43,75 @@ const VenuesPage = () => {
       description: 'Elegant meeting room with panoramic city views and premium audio-visual equipment.',
       available: true,
       rating: 4.0,
-      type: 'Indoor'
-    }
+      type: 'Indoor',
+      distance: 12 // km
+    } , {
+    id: 3,
+    name: 'City Park Outdoor Arena',
+    category: 'Outdoor Venues',
+    location: 'Central City Park',
+    capacity: '2000 people',
+    price: 500,
+    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop',
+    description: 'Spacious outdoor arena suitable for concerts, sports events, and exhibitions.',
+    available: true,
+    rating: 4.3,
+    type: 'Outdoor',
+    distance: 8
+  },
+  {
+    id: 4,
+    name: 'Tech Auditorium',
+    category: 'Auditoriums',
+    location: 'Tech Valley',
+    capacity: '800 people',
+    price: 350,
+    image: 'https://images.unsplash.com/photo-1503428593586-e225b39bddfe?w=400&h=300&fit=crop',
+    description: 'High-tech auditorium with advanced lighting and audio system.',
+    available: true,
+    rating: 4.7,
+    type: 'Indoor',
+    distance: 15
+  },
+  {
+    id: 5,
+    name: 'Riverside Event Space',
+    category: 'Event Spaces',
+    location: 'Riverfront Avenue',
+    capacity: '300 people',
+    price: 150,
+    image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=400&h=300&fit=crop',
+    description: 'Scenic riverside location for weddings, parties, and corporate gatherings.',
+    available: true,
+    rating: 4.2,
+    type: 'Outdoor',
+    distance: 5
+  },
+  {
+    id: 6,
+    name: 'Executive Boardroom',
+    category: 'Meeting Rooms',
+    location: 'Corporate Plaza',
+    capacity: '20 people',
+    price: 120,
+    image: 'https://images.unsplash.com/photo-1587560699334-cc4ff634909a?w=400&h=300&fit=crop',
+    description: 'Premium boardroom with high-speed internet and video conferencing.',
+    available: true,
+    rating: 4.8,
+    type: 'Indoor',
+    distance: 3
+  }
     // Add more venues here...
   ];
 
+  // ✅ Handle Distance Checkbox
+  const handleDistanceChange = (value) => {
+    setDistanceFilters(prev =>
+      prev.includes(value) ? prev.filter(d => d !== value) : [...prev, value]
+    );
+  };
+
+  // ✅ Filtering Logic
   const filteredVenues = venues.filter(venue => {
     const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           venue.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -53,7 +119,11 @@ const VenuesPage = () => {
     const matchesPrice = venue.price >= priceRange[0] && venue.price <= priceRange[1];
     const matchesType = !venueType || venue.type === venueType;
     const matchesRating = !rating || venue.rating >= rating;
-    return matchesSearch && matchesCategory && matchesPrice && matchesType && matchesRating;
+    const matchesDistance =
+      distanceFilters.length === 0 ||
+      distanceFilters.some(limit => venue.distance <= limit);
+
+    return matchesSearch && matchesCategory && matchesPrice && matchesType && matchesRating && matchesDistance;
   });
 
   return (
@@ -98,12 +168,37 @@ const VenuesPage = () => {
             </label>
           ))}
 
+          {/* ✅ Distance Filter with Checkboxes */}
+          <h3>Distance (Around me)</h3>
+          <label>
+            <input
+              type="checkbox"
+              checked={distanceFilters.includes(5)}
+              onChange={() => handleDistanceChange(5)}
+            /> Within 5 km
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={distanceFilters.includes(10)}
+              onChange={() => handleDistanceChange(10)}
+            /> Within 10 km
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={distanceFilters.includes(20)}
+              onChange={() => handleDistanceChange(20)}
+            /> Within 20 km
+          </label>
+
           <Button variant="secondary" onClick={() => {
             setSearchQuery('');
             setSelectedCategory('All');
             setPriceRange([0, 5500]);
             setVenueType('');
             setRating('');
+            setDistanceFilters([]);
           }}>Clear Filters</Button>
         </aside>
 
@@ -122,6 +217,7 @@ const VenuesPage = () => {
                   <p>📍 {venue.location}</p>
                   <p>₹ {venue.price} per hour</p>
                   <p>⭐ {venue.rating}</p>
+                  <p>📏 {venue.distance} km away</p>
                   <Button variant="primary" onClick={() => navigate(`/venue/${venue.id}`)}> View Details </Button>
                 </div>
               </div>
