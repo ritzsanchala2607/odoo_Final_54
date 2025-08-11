@@ -1,27 +1,12 @@
-const { Client } = require('pg');
-const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME, DB_CA } = process.env;
+require('dotenv').config();
 
-const config = {
-    user: DB_USER,
-    password: DB_PASSWORD,
-    host: DB_HOST,
-    port: DB_PORT,
-    database: DB_NAME,
-    ssl: {
-        require: true,
-        rejectUnauthorized: true,
-        ca: DB_CA,
-    },
+module.exports = {
+  url: process.env.DATABASE_URL || null,
+  username: process.env.DB_USER || process.env.POSTGRES_USER || 'postgres',
+  password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || '',
+  database: process.env.DB_NAME || process.env.POSTGRES_DB || 'quickcourt_db',
+  host: process.env.DB_HOST || process.env.POSTGRES_HOST || '127.0.0.1',
+  port: parseInt(process.env.DB_PORT || process.env.POSTGRES_PORT || '5432', 10),
+  ssl: (process.env.DB_SSL || 'false').toLowerCase() === 'true',
 };
 
-const connection = new Client(config);
-
-connection.connect(err => {
-    if (err) {
-        console.error('Database connection error:', err.stack);
-    } else {
-        console.log('Connected to Database Successfully!');
-    }
-});
-
-module.exports = connection;

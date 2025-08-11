@@ -1,23 +1,26 @@
-const isAuthorize = async(req, res, next) => {
+const jwt = require('jsonwebtoken');
+
+const authMiddleware = {
+  requireAuth: (req, res, next) => {
     try {
-        if (!req.headers.authorization ||
-            !req.headers.authorization.startsWith('Bearer') ||
-            !req.headers.authorization.split(' ')[1]
-        ) {
-            return res.status(422).json({
-                message: 'Please Provide a Valid Token'
-            });
-        }
-
-        next();
-    } catch (error) {
-        console.log(error.message);
-        res.status(401).json({
-            message: error.message
-        });
+      const header = req.headers.authorization || '';
+      const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+      if (!token) return res.status(401).json({ message: 'Unauthorized' });
+      const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret');
+      req.user = payload;
+      next();
+    } catch (err) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
-}
+  },
 
-module.exports = {
-    isAuthorize,
-}
+  requireRole: (...roles) => (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    next();
+  },
+};
+
+module.exports = authMiddleware;
+

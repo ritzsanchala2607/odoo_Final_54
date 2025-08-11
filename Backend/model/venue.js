@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Venue = sequelize.define('Venue', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    owner_id: { type: DataTypes.UUID, allowNull: false },
+    owner_id: { type: DataTypes.UUID },
     name: { type: DataTypes.TEXT, allowNull: false },
     slug: { type: DataTypes.TEXT, allowNull: false, unique: true },
     description: DataTypes.TEXT,
@@ -11,14 +11,14 @@ module.exports = (sequelize, DataTypes) => {
     longitude: DataTypes.DOUBLE,
     starting_price: DataTypes.DECIMAL(10, 2),
     rating_avg: { type: DataTypes.DECIMAL(3, 2), defaultValue: 0 },
-    status: { type: DataTypes.ENUM('pending', 'approved', 'rejected'), defaultValue: 'pending' },
+    status: { type: DataTypes.TEXT, defaultValue: 'pending' },
     approved_by: { type: DataTypes.UUID },
-    approved_at: DataTypes.DATE
+    approved_at: DataTypes.DATE,
+    created_at: DataTypes.DATE,
+    updated_at: DataTypes.DATE
   }, {
     tableName: 'venues',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    timestamps: false
   });
 
   Venue.associate = (models) => {

@@ -1,40 +1,25 @@
 const nodemailer = require('nodemailer');
-const  { SMTP_MAIL , SMTP_PASSWORD} = process.env ;
 
-const sendMail = async (email , mailSubject , content) => {
-    try {
-        const transport = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // For LocalHost if using cloud db then make it true
-            requireTLS: true ,// For LocalHost if using cloud db then make it false
-            auth: {
-                user: SMTP_MAIL,
-                pass: SMTP_PASSWORD,
-            },
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587', 10),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-        });
-
-        const mailOptions = {
-            from: SMTP_MAIL,
-            to: email,
-            subject: mailSubject,
-            html: content,
-            name: "Griwa International"
-        };
-
-        transport.sendMail(mailOptions , function(error , info) {
-            if (error) {
-                console.log('Error Occurred: ' + error.message);
-            } else {
-                console.log('Email Sent Successfully: ' + info.response);
-            }
-        });
-    }
-
-    catch (error) {
-        console.log(error.message);
-    }
+async function sendMail({ to, subject, html, text }) {
+  if (!process.env.SMTP_USER) return;
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM || process.env.SMTP_USER,
+    to,
+    subject,
+    text,
+    html,
+  });
 }
 
-module.exports = sendMail;
+module.exports = { sendMail };
+

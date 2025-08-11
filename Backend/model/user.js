@@ -9,12 +9,12 @@ module.exports = (sequelize, DataTypes) => {
     avatar_url: DataTypes.TEXT,
     full_name: DataTypes.TEXT,
     phone: DataTypes.TEXT,
-    short_bio: DataTypes.TEXT
+    short_bio: DataTypes.TEXT,
+    created_at: DataTypes.DATE,
+    updated_at: DataTypes.DATE
   }, {
     tableName: 'users',
-    timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    timestamps: false
   });
 
   User.associate = (models) => {
