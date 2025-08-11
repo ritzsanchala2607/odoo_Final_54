@@ -9,9 +9,12 @@ import OwnerHomePage from './pages/OwnerHomePage';
 import VenuesPage from './pages/VenuesPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
+import AdminDashboard from './pages/AdminDashboard';
+
 import VenueDetails from './pages/VenueDetails';
 import ProtectedRoute from './components/ProtectedRoute';
 // import OwnerHomePage  from './pages/OwnerHomePage';
+
 import Dashboard from './pages/Dashboard';
 import './App.css';
 
@@ -26,11 +29,11 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-otp" element={<VerifyOtpPage />} />
             
-            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/owner-home" element={<OwnerHomePage />} />
+              <Route path="/admin-home" element={<AdminDashboard/>}></Route>
               <Route path="/venues" element={<VenuesPage />} />
               <Route path="/mybookings" element={<MyBookingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
