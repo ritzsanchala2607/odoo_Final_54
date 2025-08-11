@@ -9,9 +9,9 @@ const Header = ({ showNavigation = false }) => {
 
   const navigationItems = [
     { label: 'Home', path: '/home' },
-    // { label: 'Explore', path: '/explore' },
-    // { label: 'My Skills', path: '/profile' },
-    { label: 'Requests', path: '/requests' }
+    { label: 'Venues', path: '/Venues' },
+    { label: 'My Bookings', path: '/MyBookings' },
+    { label: 'Profile', path: '/Profile' }
   ];
 
   return (
