@@ -11,8 +11,7 @@ const Header = ({ showNavigation = false }) => {
 
   const { isAuthenticated, logout, user, refreshUserData } = useAuth();
 
-
-  const { isAuthenticated, logout } = useAuth();
+  // const { isAuthenticated, logout } = useAuth();
  const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
 
