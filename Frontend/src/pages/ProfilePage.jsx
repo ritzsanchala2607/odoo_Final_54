@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import Select from '../components/Select';
 import Avatar from '../components/Avatar';
 import './ProfilePage.css';
 
@@ -18,19 +17,23 @@ const ProfilePage = () => {
     bio: 'Experienced professional with 8+ years in technology and business management. Passionate about innovation and team leadership.',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
   });
-
   const [editData, setEditData] = useState({ ...profileData });
+  const [bookings, setBookings] = useState([]);
 
-  const roleOptions = [
-    'Student',
-    'Professional',
-    'Freelancer',
-    'Entrepreneur',
-    'Manager',
-    'Director',
-    'CEO',
-    'Other'
-  ];
+  // Mock API Call for Bookings
+  useEffect(() => {
+    const fetchBookings = async () => {
+      const data = [
+        { id: 1, venueName: 'Grand Conference Center', date: '2024-02-15', status: 'confirmed' },
+        { id: 2, venueName: 'Skyline Meeting Room', date: '2024-02-20', status: 'confirmed' },
+        { id: 3, venueName: 'Tech Auditorium', date: '2024-01-10', status: 'completed' },
+        { id: 4, venueName: 'City Hall Event Space', date: '2023-12-05', status: 'deleted' },
+        { id: 5, venueName: 'Modern Banquet Hall', date: '2024-03-02', status: 'deleted' }
+      ];
+      setBookings(data);
+    };
+    fetchBookings();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -43,7 +46,6 @@ const ProfilePage = () => {
   const handleSave = () => {
     setProfileData(editData);
     setIsEditing(false);
-    // In a real app, this would save to backend
     alert('Profile updated successfully!');
   };
 
@@ -63,7 +65,6 @@ const ProfilePage = () => {
         alert('Image size should be less than 5MB');
         return;
       }
-      
       const reader = new FileReader();
       reader.onload = (e) => {
         setEditData(prev => ({ ...prev, avatar: e.target.result }));
@@ -72,38 +73,24 @@ const ProfilePage = () => {
     }
   };
 
-  const stats = [
-    { label: 'Total Bookings', value: '24', icon: '📅' },
-    { label: 'Active Bookings', value: '3', icon: '✅' },
-    { label: 'Completed Events', value: '21', icon: '🎉' },
-    { label: 'Member Since', value: '2022', icon: '🎯' }
-  ];
+  // Booking filters
+  const confirmedBookings = bookings.filter(b => b.status === 'confirmed');
+  const completedBookings = bookings.filter(b => b.status === 'completed');
+  const deletedBookings = bookings.filter(b => b.status === 'deleted');
+  const recentBookings = bookings.slice(0, 3);
 
-  const recentBookings = [
-    {
-      id: 1,
-      venueName: 'Grand Conference Center',
-      date: '2024-02-15',
-      status: 'confirmed'
-    },
-    {
-      id: 2,
-      venueName: 'Skyline Meeting Room',
-      date: '2024-02-20',
-      status: 'confirmed'
-    },
-    {
-      id: 3,
-      venueName: 'Tech Auditorium',
-      date: '2024-01-10',
-      status: 'completed'
-    }
+  const stats = [
+    { label: 'Total Bookings', value: bookings.length, icon: '📅' },
+    { label: 'Confirmed', value: confirmedBookings.length, icon: '✅' },
+    { label: 'Deleted', value: deletedBookings.length, icon: '🗑️' },
+    { label: 'Member Since', value: '2022', icon: '🎯' }
   ];
 
   return (
     <div className="profile-page">
       <Header showNavigation />
       <div className="profile-container fade-in">
+        {/* HEADER */}
         <div className="profile-header">
           <div className="profile-cover">
             <div className="profile-avatar-section">
@@ -130,7 +117,6 @@ const ProfilePage = () => {
                 {isEditing ? editData.position : profileData.position} at {isEditing ? editData.company : profileData.company}
               </p>
               <p className="profile-location">📍 {isEditing ? editData.location : profileData.location}</p>
-              
               <div className="profile-actions">
                 {!isEditing ? (
                   <Button onClick={() => setIsEditing(true)} variant="primary">
@@ -151,98 +137,41 @@ const ProfilePage = () => {
           </div>
         </div>
 
+        {/* CONTENT */}
         <div className="profile-content">
+          {/* MAIN SECTION */}
           <div className="profile-main">
+            {/* PERSONAL INFO */}
             <div className="profile-section">
               <h2>Personal Information</h2>
               {!isEditing ? (
                 <div className="info-grid">
-                  <div className="info-item">
-                    <span className="info-label">Full Name</span>
-                    <span className="info-value">{profileData.fullName}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Email</span>
-                    <span className="info-value">{profileData.email}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Phone</span>
-                    <span className="info-value">{profileData.phone}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Company</span>
-                    <span className="info-value">{profileData.company}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Position</span>
-                    <span className="info-value">{profileData.position}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Location</span>
-                    <span className="info-value">{profileData.location}</span>
-                  </div>
+                  <div className="info-item"><span className="info-label">Full Name</span><span className="info-value">{profileData.fullName}</span></div>
+                  <div className="info-item"><span className="info-label">Email</span><span className="info-value">{profileData.email}</span></div>
+                  <div className="info-item"><span className="info-label">Phone</span><span className="info-value">{profileData.phone}</span></div>
+                  <div className="info-item"><span className="info-label">Company</span><span className="info-value">{profileData.company}</span></div>
+                  <div className="info-item"><span className="info-label">Position</span><span className="info-value">{profileData.position}</span></div>
+                  <div className="info-item"><span className="info-label">Location</span><span className="info-value">{profileData.location}</span></div>
                 </div>
               ) : (
                 <div className="edit-form">
                   <div className="form-row">
-                    <div className="form-group">
-                      <label>Full Name</label>
-                      <Input
-                        name="fullName"
-                        value={editData.fullName}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Email</label>
-                      <Input
-                        name="email"
-                        type="email"
-                        value={editData.email}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+                    <div className="form-group"><label>Full Name</label><Input name="fullName" value={editData.fullName} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>Email</label><Input name="email" type="email" value={editData.email} onChange={handleInputChange} /></div>
                   </div>
                   <div className="form-row">
-                    <div className="form-group">
-                      <label>Phone</label>
-                      <Input
-                        name="phone"
-                        value={editData.phone}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Company</label>
-                      <Input
-                        name="company"
-                        value={editData.company}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+                    <div className="form-group"><label>Phone</label><Input name="phone" value={editData.phone} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>Company</label><Input name="company" value={editData.company} onChange={handleInputChange} /></div>
                   </div>
                   <div className="form-row">
-                    <div className="form-group">
-                      <label>Position</label>
-                      <Input
-                        name="position"
-                        value={editData.position}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Location</label>
-                      <Input
-                        name="location"
-                        value={editData.location}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+                    <div className="form-group"><label>Position</label><Input name="position" value={editData.position} onChange={handleInputChange} /></div>
+                    <div className="form-group"><label>Location</label><Input name="location" value={editData.location} onChange={handleInputChange} /></div>
                   </div>
                 </div>
               )}
             </div>
 
+            {/* ABOUT ME */}
             <div className="profile-section">
               <h2>About Me</h2>
               {!isEditing ? (
@@ -250,19 +179,41 @@ const ProfilePage = () => {
               ) : (
                 <div className="form-group">
                   <label>Bio</label>
-                  <textarea
-                    name="bio"
-                    value={editData.bio}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="bio-textarea"
-                    placeholder="Tell us about yourself..."
-                  />
+                  <textarea name="bio" value={editData.bio} onChange={handleInputChange} rows={4} className="bio-textarea" placeholder="Tell us about yourself..." />
                 </div>
               )}
             </div>
+
+            {/* CONFIRMED BOOKINGS */}
+            <div className="profile-section">
+              <h2>Confirmed Bookings</h2>
+              {confirmedBookings.length > 0 ? confirmedBookings.map(b => (
+                <div key={b.id} className="recent-booking-item">
+                  <div className="booking-info">
+                    <h4>{b.venueName}</h4>
+                    <p>{new Date(b.date).toLocaleDateString()}</p>
+                  </div>
+                  <span className={`status-dot ${b.status}`}></span>
+                </div>
+              )) : <p>No confirmed bookings.</p>}
+            </div>
+
+            {/* DELETED BOOKINGS */}
+            <div className="profile-section">
+              <h2>Deleted Bookings</h2>
+              {deletedBookings.length > 0 ? deletedBookings.map(b => (
+                <div key={b.id} className="recent-booking-item">
+                  <div className="booking-info">
+                    <h4>{b.venueName}</h4>
+                    <p>{new Date(b.date).toLocaleDateString()}</p>
+                  </div>
+                  <span className={`status-dot ${b.status}`}></span>
+                </div>
+              )) : <p>No deleted bookings.</p>}
+            </div>
           </div>
 
+          {/* SIDEBAR */}
           <div className="profile-sidebar">
             <div className="stats-section">
               <h3>Your Stats</h3>
@@ -292,9 +243,7 @@ const ProfilePage = () => {
                   </div>
                 ))}
               </div>
-              <Button variant="secondary" fullWidth>
-                View All Bookings
-              </Button>
+              <Button variant="secondary" fullWidth>View All Bookings</Button>
             </div>
           </div>
         </div>
