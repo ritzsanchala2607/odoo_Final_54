@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const Razorpay = require("razorpay");
 
 // Initialize DB (loads models and associations)
 require('./helper/db.helper');
@@ -25,29 +26,35 @@ const slotRouter = require('./routes/slot.routes');
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // your frontend's URL
-  credentials: true
+    origin: 'http://localhost:5173', // your frontend's URL
+    credentials: true
 }));
 
 // Session and cookie middleware
 app.use(cookieParser());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-    httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-    sameSite: 'lax'
-  }
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+        sameSite: 'lax'
+    }
 }));
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID, // Replace with your test key_id
+    key_secret: process.env.RAZORPAY_KEY_SECRET, // Replace with your test key_secret
+});
 
 // Increase body size limits to allow base64 images in JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
 app.use('/avatar', express.static(path.join(__dirname, 'public/avatar')));
 
 // API routes
@@ -66,8 +73,8 @@ app.use('/api/slots', slotRouter);
 app.get('/', (req, res) => res.send('QuickCourt API'));
 
 if (process.env.NODE_ENV !== 'production') {
-  const PORT = parseInt(process.env.PORT || '3000', 10);
-  app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+    const PORT = parseInt(process.env.PORT || '3000', 10);
+    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }
 
 module.exports = app;

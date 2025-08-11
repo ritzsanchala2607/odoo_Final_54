@@ -1,8 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from '../components/Header';
+import BookingModal from '../components/BookingModal';
+import RazorpayPayment from '../components/RazorpayPayment';
+import BookingConfirmation from '../components/BookingConfirmation';
 import "./VenueDetails.css";
 
 const VenueDetails = () => {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [bookingData, setBookingData] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+
+  // Venue data - you can replace this with actual data from props or API
+  const venueData = {
+    id: 1,
+    name: "SBR Badminton",
+    location: "Satellite, Jodhpur Village",
+    rating: 4.5,
+    reviews: 6,
+    operatingHours: "7:00AM - 11:00PM",
+    address: "2nd Floor, Anupam Banquet Hall, Opp. Akurai Heights, Satellite, Jodhpur Village, Ahmedabad, Gujarat - 380015"
+  };
+
+  const handleBookVenue = () => {
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingConfirm = (booking) => {
+    setBookingData(booking);
+    setIsBookingModalOpen(false);
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = (paymentResult) => {
+    setPaymentData(paymentResult);
+    setShowPayment(false);
+    setShowConfirmation(true);
+  };
+
+  const handlePaymentFailure = (error) => {
+    console.error('Payment failed:', error);
+    alert('Payment failed: ' + error);
+    setShowPayment(false);
+    // Optionally reopen booking modal
+    setIsBookingModalOpen(true);
+  };
+
+  const handleCloseConfirmation = () => {
+    setShowConfirmation(false);
+    setBookingData(null);
+    setPaymentData(null);
+  };
+
   return (
     <>
     <Header showNavigation />
@@ -27,7 +77,7 @@ const VenueDetails = () => {
 
         {/* Right: Booking + Info */}
         <div className="venue-sidebar">
-          <button className="book-btn">Book This Venue</button>
+          <button className="book-btn" onClick={handleBookVenue}>Book This Venue</button>
 
           <div className="info-card">
             <h4>🕒 Operating Hours</h4>
@@ -100,8 +150,34 @@ const VenueDetails = () => {
         </div>
       </section>
     </div>
+
+    {/* Booking Modal */}
+    <BookingModal
+      isOpen={isBookingModalOpen}
+      onClose={() => setIsBookingModalOpen(false)}
+      venue={venueData}
+      onBookingConfirm={handleBookingConfirm}
+    />
+
+    {/* Payment Component */}
+    {showPayment && bookingData && (
+      <div className="payment-overlay">
+        <RazorpayPayment
+          bookingDetails={bookingData}
+          onPaymentSuccess={handlePaymentSuccess}
+          onPaymentFailure={handlePaymentFailure}
+        />
+      </div>
+    )}
+
+    {/* Booking Confirmation */}
+    {showConfirmation && paymentData && (
+      <BookingConfirmation
+        bookingData={paymentData}
+        onClose={handleCloseConfirmation}
+      />
+    )}
     </>
-    
   );
 };
 

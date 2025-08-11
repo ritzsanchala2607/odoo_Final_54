@@ -73,6 +73,12 @@ const OwnerHomePage = () => {
     } catch (err) {
       console.error('Logout failed:', err);
     }
+
+
+
+    console.log('Logout clicked');
+
+
   };
 
   // Fetch venues and courts on component mount
@@ -317,12 +323,14 @@ const OwnerHomePage = () => {
     setShowCourtForm(true);
   };
 
+
   // Open create court modal
   const openCreateCourt = () => {
     setEditingCourt(null);
     setSelectedVenue(null);
     setShowCourtForm(true);
   };
+
 
   // Mock data
   const courtBookingData = [
