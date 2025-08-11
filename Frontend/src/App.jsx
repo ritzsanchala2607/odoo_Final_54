@@ -16,7 +16,9 @@ import HomePage from './pages/HomePage';
 import VenuesPage from './pages/VenuesPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
+
 import VerifyOtpPage from './pages/VerifyOtpPage';
+
 import VenueDetails from './pages/VenueDetails';
 import OwnerHomePage  from './pages/OwnerHomePage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -33,73 +35,23 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            {/* All other routes are protected */}
-            <Route
-              path="/verify-otp"
-              element={
-                <PrivateRoute>
-                  <VerifyOtpPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/home"
-              element={
-                <PrivateRoute>
-                  <HomePage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/venues"
-              element={
-                <PrivateRoute>
-                  <VenuesPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/owner-home"
-              element={
-                <PrivateRoute>
-                  <OwnerHomePage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/mybookings"
-              element={
-                <PrivateRoute>
-                  <MyBookingsPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <ProfilePage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/venue/:id"
-              element={
-                <PrivateRoute>
-                  <VenueDetails />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
+
+            <Route path="/verify-otp" element={<VerifyOtpPage />} />
+            
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/owner-home" element={<OwnerHomePage />} />
+              <Route path="/admin-home" element={<AdminDashboard/>}></Route>
+              <Route path="/venues" element={<VenuesPage />} />
+              <Route path="/mybookings" element={<MyBookingsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/venue/:id" element={<VenueDetails />} />
+            </Route>
+            
             {/* Catch-all route for any unmatched paths */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
+
           </Routes>
         </div>
       </Router>

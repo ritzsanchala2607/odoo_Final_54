@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Users, MapPin, Calendar, AlertTriangle, TrendingUp, Activity, Building, DollarSign } from 'lucide-react';
 import './Dashboard.css';
@@ -6,6 +8,8 @@ import './Dashboard.css';
 const AdminDashboard = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // Mock data
   const cityWiseData = [
@@ -77,6 +81,20 @@ const AdminDashboard = () => {
               <h1>QuickCourt Admin</h1>
               <p>Manage your sports facility booking platform</p>
             </div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <button
+              className="get-started-btn"
+              onClick={() => navigate('/home')}
+            >
+              Go to App
+            </button>
+            <button
+              className="logout-btn"
+              onClick={async () => { await logout(); navigate('/login'); }}
+            >
+              Logout
+            </button>
           </div>
           <div className="time-range-selector">
             {['24h', '7d', '30d', '90d'].map((range) => (
