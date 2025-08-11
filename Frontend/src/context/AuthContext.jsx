@@ -18,41 +18,58 @@ export const AuthProvider = ({ children }) => {
   const STORAGE_KEY = 'auth_user';
 
   useEffect(() => {
-    // Hydrate from localStorage first so UI has data even if server endpoints are missing
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setUser(parsed);
-        setIsAuthenticated(true);
-      } catch (e) {
-        console.error('Failed to parse user from localStorage', e);
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }
-    // Best-effort server check; if endpoint doesn't exist, fallback to local state
+    // Check authentication status on app load
     checkAuthStatus();
   }, []);
 
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/check-auth`, {
-        withCredentials: true
+      // First try to get current user data
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/me`, {
+        withCredentials: true // Important: This sends cookies
       });
-      if (response.data?.isAuthenticated && response.data?.user) {
+      
+      if (response.data?.user) {
         setIsAuthenticated(true);
         setUser(response.data.user);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
       } else {
-        // If server says not authenticated, clear local
-        localStorage.removeItem(STORAGE_KEY);
+        // If no user data, check auth status
+        const authResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/check-auth`, {
+          withCredentials: true
+        });
+        
+        if (authResponse.data?.isAuthenticated && authResponse.data?.user) {
+          setIsAuthenticated(true);
+          setUser(authResponse.data.user);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(authResponse.data.user));
+        } else {
+          // Not authenticated
+          localStorage.removeItem(STORAGE_KEY);
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      }
+    } catch (error) {
+      console.log('Check auth failed, falling back to local state', error);
+      
+      // Fallback to localStorage if server is unavailable
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setUser(parsed);
+          setIsAuthenticated(true);
+        } catch (e) {
+          console.error('Failed to parse user from localStorage', e);
+          localStorage.removeItem(STORAGE_KEY);
+          setIsAuthenticated(false);
+          setUser(null);
+        }
+      } else {
         setIsAuthenticated(false);
         setUser(null);
       }
-
-    } catch (error) {
-      // Server route may not exist; do not clear local state in this case
-      console.log('Check auth failed, falling back to local state', error);
     } finally {
       setLoading(false);
     }
@@ -63,7 +80,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
         { email, password },
-        { withCredentials: true }
+        { withCredentials: true } // Important: This receives cookies
       );
       
       if (response.data.user) {
@@ -96,7 +113,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshUserData = async () => {
-    // Try server, else fall back to localStorage
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/me`, {
         withCredentials: true
@@ -108,6 +124,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (e) {
       console.error('Failed to refresh user data from server', e);
+      // Fallback to localStorage
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
