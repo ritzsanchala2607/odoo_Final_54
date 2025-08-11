@@ -25,7 +25,8 @@ export const AuthProvider = ({ children }) => {
         const parsed = JSON.parse(saved);
         setUser(parsed);
         setIsAuthenticated(true);
-      } catch (_) {
+      } catch (e) {
+        console.error('Failed to parse user from localStorage', e);
         localStorage.removeItem(STORAGE_KEY);
       }
     }
@@ -48,11 +49,11 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
       }
-    }
-    //  catch (error) {
-    //   // Server route may not exist; do not clear local state in this case
-    // }
-     finally {
+
+    } catch (error) {
+      // Server route may not exist; do not clear local state in this case
+      console.log('Check auth failed, falling back to local state', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -69,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         setUser(response.data.user);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
-        return { success: true };
+        return { success: true, user: response.data.user };
       }
     } catch (error) {
       return { 
@@ -90,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('userRole');
     }
   };
 
@@ -104,14 +106,16 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
         return response.data.user;
       }
-    } catch (_) {
+    } catch (e) {
+      console.error('Failed to refresh user data from server', e);
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           setUser(parsed);
           return parsed;
-        } catch (_) {
+        } catch (e) {
+          console.error('Failed to parse user from localStorage', e);
           localStorage.removeItem(STORAGE_KEY);
         }
       }

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -20,7 +21,6 @@ const Header = ({ showNavigation = false }) => {
 
   const { isAuthenticated, logout, user, refreshUserData } = useAuth();
   const [userRole, setUserRole] = useState(localStorage.getItem('userRole') || null);
-  const [userPoints, setUserPoints] = useState(localStorage.getItem('userPoints') || 0);
   const coinFrames = React.useMemo(() => [coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9], []);
   const [coinFrameIdx, setCoinFrameIdx] = useState(0);
 
@@ -69,12 +69,12 @@ const Header = ({ showNavigation = false }) => {
 
 
   useEffect(() => {
-    // This effect will run whenever the user or isAuthenticated changes
     if (isAuthenticated) {
-      setUserRole(localStorage.getItem('userRole'));
-      setUserPoints(localStorage.getItem('userPoints') || 0);
+      setUserRole((user && user.role) ? user.role : localStorage.getItem('userRole'));
     }
   }, [isAuthenticated, user]);
+
+  const points = typeof user?.credit_balance === 'number' ? user.credit_balance : 0;
 
   const navigationItems = [
     { label: 'Home', path: '/home', requiresAuth: false },
@@ -120,7 +120,7 @@ const Header = ({ showNavigation = false }) => {
                     style={{ width: '25px', height: '25px', marginRight: '5px' }}
                   />
                   <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#FFD700' }}>
-                    {userPoints}
+                    {points}
                   </span>
                 </div>
               )}
@@ -163,7 +163,7 @@ const Header = ({ showNavigation = false }) => {
                   style={{ width: '25px', height: '25px', marginRight: '5px' }}
                 />
                 <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#FFD700' }}>
-                  {userPoints}
+                  {points}
                 </span>
               </div>
             )}

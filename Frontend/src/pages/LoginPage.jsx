@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import './LoginPage.css';
+import { CloudCog } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -20,17 +21,14 @@ const LoginPage = () => {
     try {
       const result = await login(email, password);
       
-      if (result?.success) {
-        // Get the user role from localStorage which was set by AuthContext
-        const userRole = localStorage.getItem('userRole');
-        
-        // Navigate based on role
-        if (userRole === 'owner') {
+      if (result?.success && result?.user) {
+        const role = result.user.role;
+        if (role === 'owner') {
           navigate('/owner-home');
-        } else if(userRole ==='admin') {
+        } else if (role === 'admin') {
           navigate('/admin-home');
-        }else{
-           navigate('/home');
+        } else {
+          navigate('/home');
         }
       } else {
         setError(result?.error || 'Login failed. Please try again.');
@@ -39,7 +37,6 @@ const LoginPage = () => {
       console.error('Login error:', err);
       setError('An error occurred during login. Please try again.');
     }
-
   };
 
   return (
@@ -96,4 +93,5 @@ const LoginPage = () => {
     </div>
   );
 };
+
 export default LoginPage;
