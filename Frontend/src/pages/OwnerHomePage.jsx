@@ -1,21 +1,78 @@
+import { PlusCircle, MapPin, X } from 'lucide-react';
+
 import React, { useState } from 'react';
 import './OwnerHomePage.css';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  LineChart, Line, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import {
-  Calendar, MapPin, Star, TrendingUp, Users, DollarSign, Activity, Trophy, AlertTriangle, Zap, Eye, BarChart3, TrendingDown,
-  LogOut, User, Filter, RefreshCw, Target, Brain
-} from 'lucide-react';
+  Calendar, Star, TrendingUp, Users, DollarSign, Activity, Trophy, AlertTriangle, Zap, Eye, BarChart3, TrendingDown,
+  LogOut, User, Filter, Target, Brain} from 'lucide-react';
 
 const OwnerHomePage = () => {
-    
+    const [myCourts] = useState([
+    { id: 1, name: 'Court A', venue: 'Arena Sports Complex', sport: 'Badminton', price: '₹500/hr', status: 'Active' },
+    { id: 2, name: 'Court B', venue: 'Arena Sports Complex', sport: 'Tennis', price: '₹600/hr', status: 'Active' },
+    { id: 3, name: 'Field 1', venue: 'City Turf', sport: 'Football', price: '₹800/hr', status: 'Inactive' },
+  ]);
   const [activeTab, setActiveTab] = useState('overview');
   const [performanceFilter, setPerformanceFilter] = useState('all');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [selectedPrediction, setSelectedPrediction] = useState(null);
 
+
+const [newVenue, setNewVenue] = useState({
+  name: '',
+  slug: '',
+  description: '',
+  address: '',
+  city: '',
+  latitude: '',
+  longitude: '',
+  starting_price: '',
+  maxCourts: 1
+});
+
+const handleVenueChange = (e) => {
+  const { name, value } = e.target;
+  setNewVenue(prev => ({ ...prev, [name]: value }));
+
+  // Auto-create slug when user types name
+  if (name === 'name') {
+    const slugValue = value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+    setNewVenue(prev => ({ ...prev, slug: slugValue }));
+  }
+};
+
+const handleVenueSubmit = (e) => {
+  e.preventDefault();
+  alert(`Venue request sent to admin:\n${JSON.stringify(newVenue, null, 2)}`);
+  setShowVenueModal(false);
+  setNewVenue({
+    name: '',
+    slug: '',
+    description: '',
+    address: '',
+    city: '',
+    latitude: '',
+    longitude: '',
+    starting_price: '',
+    maxCourts: 1
+  });
+};
+
+  const [showVenueModal, setShowVenueModal] = useState(false);
+
+const submitVenueRequest = (e) => {
+    e.preventDefault();
+    alert(`Venue request sent to admin:\n${JSON.stringify(newVenue, null, 2)}`);
+    setShowVenueModal(false);
+    setNewVenue({ name: '', location: '', sports: '', price: ''});
+  };
   const user = {
     name: 'John Smith',
     email: 'john.smith@quickcourt.com',
@@ -23,10 +80,78 @@ const OwnerHomePage = () => {
   };
 
   const handleLogout = async () => {
-
+    
     console.log('Logout clicked');
   };
-  // Mock data
+  
+  // Initial dummy venues
+const [venues, setVenues] = useState([
+  {
+    id: 1,
+    name: "Arena Sports Complex",
+    location: "City Center",
+    maxCourts: 6,
+    courts: [{ id: 1, name: "Court A", sport: "Badminton", capacity: 4, price: 500 }]
+  },
+  {
+    id: 2,
+    name: "Metro Sports Hub",
+    location: "East Road",
+    maxCourts: 4,
+    courts: []
+  }
+]);
+
+// const [showVenueModal, setShowVenueModal] = useState(false);
+const [showCourtModal, setShowCourtModal] = useState(false);
+
+const [selectedVenue, setSelectedVenue] = useState(null);
+// const [newCourt, setNewCourt] = useState({ courtName: "", sport: "", capacity: "", price: "" });
+const [newCourt, setNewCourt] = useState({
+  name: "",
+  sport_type: "",
+  price_per_hour: "",
+  price_per_person: "",
+  allow_per_hour: true,
+  allow_per_person: false,
+  refund_ratio_override: "",
+  capacity: 1,
+  is_active: true
+});
+const handleCourtChange = (e) => {
+  const { name, value } = e.target;
+  setNewCourt((prev) => ({ ...prev, [name]: value }));
+};
+
+
+const openAddCourtModal = (venueId) => {
+  const venue = venues.find(v => v.id === venueId);
+  setSelectedVenue(venue);
+  setShowCourtModal(true);
+};
+
+const handleCourtSubmit = (e) => {
+  e.preventDefault();
+  if (!selectedVenue) return;
+
+  const updatedVenues = venues.map((v) => {
+    if (v.id === selectedVenue.id) {
+      if (v.courts.length < v.maxCourts) {
+        return {
+          ...v,
+          courts: [...v.courts, { id: Date.now(), ...newCourt }]
+        };
+      }
+    }
+    return v;
+  });
+
+  setVenues(updatedVenues);
+  setShowCourtModal(false);
+  setNewCourt({ courtName: "", sport: "", capacity: "", price: "" });
+};
+
+
   const courtBookingData = [
     { court: 'Arena Sports Complex - Court A', venue: 'Arena Sports Complex', bookings: 245, sport: 'Badminton', revenue: 12250, rating: 4.8, utilization: 92, peakHours: '6-8 PM' },
     { court: 'Metro Sports Hub - Court 1', venue: 'Metro Sports Hub', bookings: 198, sport: 'Tennis', revenue: 9900, rating: 4.6, utilization: 78, peakHours: '7-9 AM' },
@@ -194,7 +319,10 @@ const OwnerHomePage = () => {
     { id: 'overview', label: 'Overview', icon: Eye },
     { id: 'performance', label: 'Performance', icon: BarChart3 },
     { id: 'insights', label: 'Customer Insights', icon: Users },
-    { id: 'predictions', label: 'Predictions', icon: Zap }
+    { id: 'predictions', label: 'Predictions', icon: Zap },
+    { id: 'mycourts', label: 'My Courts', icon: Zap },
+     { id: 'venues', label: 'My Venues', icon: Zap }
+     
   ];
 
   const performanceFilters = [
@@ -527,6 +655,258 @@ const OwnerHomePage = () => {
             </div>
           </div>
         );
+
+      case 'mycourts':
+        return (
+          <div className="mycourts-section">
+            <div className="mycourts-header">
+              <h3>My Courts</h3>
+            </div>
+            <div className="courts-list">
+              {myCourts.map((court) => (
+                <div key={court.id} className="court-card">
+                  <div className="court-info">
+                    <h4>{court.name}</h4>
+                    <p><MapPin size={14} /> {court.venue}</p>
+                    <p>Sport: {court.sport}</p>
+                    <p>Price: {court.price}</p>
+                  </div>
+                  <span className={`court-status ${court.status.toLowerCase()}`}>{court.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+        case 'venues':
+  return (
+    <div className="venues-section">
+      <div className="venues-header">
+        <h3>My Venues</h3>
+        <button className="new-venue-btn" onClick={() => setShowVenueModal(true)}>
+          <PlusCircle size={18} /> Create / Open New Venue
+        </button>
+      </div>
+
+      <div className="venue-list">
+        {venues.map((venue) => (
+          <div key={venue.id} className="venue-card">
+            <div className="venue-info">
+              <h4>{venue.name}</h4>
+              <p><MapPin size={14} /> {venue.location}</p>
+              <p>Courts: {venue.courts.length} / {venue.maxCourts}</p>
+            </div>
+
+            <div className="venue-actions">
+              <button
+                disabled={venue.courts.length >= venue.maxCourts}
+                onClick={() => openAddCourtModal(venue.id)}
+              >
+                Add Court
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+     
+      {showVenueModal && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <div className="modal-header">
+        <h3>Create New Venue</h3>
+        <button className="close-btn" onClick={() => setShowVenueModal(false)}>
+          <X size={18} />
+        </button>
+      </div>
+      <form className="modal-form" onSubmit={handleVenueSubmit}>
+        
+        <label>Venue Name *</label>
+        <input type="text" name="name" value={newVenue.name} onChange={handleVenueChange} required />
+
+        <label>Slug *</label>
+        <input type="text" name="slug" value={newVenue.slug} onChange={handleVenueChange} required />
+
+        <label>Description</label>
+        <textarea name="description" value={newVenue.description} onChange={handleVenueChange}></textarea>
+
+        <label>Address *</label>
+        <input type="text" name="address" value={newVenue.address} onChange={handleVenueChange} required />
+
+        <label>City *</label>
+        <input type="text" name="city" value={newVenue.city} onChange={handleVenueChange} required />
+
+        <div className="form-row">
+          <div>
+            <label>Latitude *</label>
+            <input type="number" step="any" name="latitude" value={newVenue.latitude} onChange={handleVenueChange} required />
+          </div>
+          <div>
+            <label>Longitude *</label>
+            <input type="number" step="any" name="longitude" value={newVenue.longitude} onChange={handleVenueChange} required />
+          </div>
+        </div>
+
+        <label>Starting Price (₹/hr) *</label>
+        <input type="number" step="0.01" name="starting_price" value={newVenue.starting_price} onChange={handleVenueChange} required />
+
+        <label>Max Courts Allowed</label>
+        <input type="number" name="maxCourts" value={newVenue.maxCourts} onChange={handleVenueChange} min="1" required />
+
+        <div className="modal-actions">
+          <button type="submit" className="btn-primary">Save Venue</button>
+          <button type="button" className="btn-secondary" onClick={() => setShowVenueModal(false)}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
+     {showCourtModal && selectedVenue && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <div className="modal-header">
+        <h3>Add Court to {selectedVenue.name}</h3>
+        <button className="close-btn" onClick={() => setShowCourtModal(false)}>
+          <X size={18} />
+        </button>
+      </div>
+      <form className="modal-form" onSubmit={handleCourtSubmit}>
+        
+        {/* Court Name */}
+        <label>Court Name *</label>
+        <input
+          type="text"
+          name="name"
+          value={newCourt.name}
+          onChange={handleCourtChange}
+          required
+        />
+
+        {/* Sport Type */}
+        <label>Sport Type *</label>
+        <select
+          name="sport_type"
+          value={newCourt.sport_type}
+          onChange={handleCourtChange}
+          required
+        >
+          <option value="">Select sport</option>
+          <option>Badminton</option>
+          <option>Tennis</option>
+          <option>Football</option>
+          <option>Basketball</option>
+          <option>Cricket</option>
+        </select>
+
+        {/* Price Per Hour */}
+        <label>Price Per Hour (₹) *</label>
+        <input
+          type="number"
+          step="0.01"
+          name="price_per_hour"
+          value={newCourt.price_per_hour}
+          onChange={handleCourtChange}
+          required={newCourt.allow_per_hour}
+          disabled={!newCourt.allow_per_hour}
+        />
+
+        {/* Price Per Person */}
+        <label>Price Per Person (₹)</label>
+        <input
+          type="number"
+          step="0.01"
+          name="price_per_person"
+          value={newCourt.price_per_person}
+          onChange={handleCourtChange}
+          required={newCourt.allow_per_person}
+          disabled={!newCourt.allow_per_person}
+        />
+
+        {/* Allow Booking Type */}
+        <div className="checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              name="allow_per_hour"
+              checked={newCourt.allow_per_hour}
+              onChange={(e) =>
+                setNewCourt((prev) => ({
+                  ...prev,
+                  allow_per_hour: e.target.checked
+                }))
+              }
+            />
+            Allow Per Hour Booking
+          </label>
+
+          <label>
+            <input
+              type="checkbox"
+              name="allow_per_person"
+              checked={newCourt.allow_per_person}
+              onChange={(e) =>
+                setNewCourt((prev) => ({
+                  ...prev,
+                  allow_per_person: e.target.checked
+                }))
+              }
+            />
+            Allow Per Person Booking
+          </label>
+        </div>
+
+        {/* Refund Ratio */}
+        <label>Refund Ratio Override (%)</label>
+        <input
+          type="number"
+          step="0.01"
+          name="refund_ratio_override"
+          value={newCourt.refund_ratio_override}
+          onChange={handleCourtChange}
+          placeholder="Leave empty for default"
+        />
+
+        {/* Capacity */}
+        <label>Capacity *</label>
+        <input
+          type="number"
+          name="capacity"
+          min="1"
+          value={newCourt.capacity}
+          onChange={handleCourtChange}
+          required
+        />
+
+        {/* Active / Inactive */}
+        <label>Status *</label>
+        <select
+          name="is_active"
+          value={newCourt.is_active}
+          onChange={(e) =>
+            setNewCourt((prev) => ({
+              ...prev,
+              is_active: e.target.value === "true"
+            }))
+          }
+        >
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+
+        {/* Actions */}
+        <div className="modal-actions">
+          <button type="submit" className="btn-primary">Save Court</button>
+          <button type="button" className="btn-secondary" onClick={() => setShowCourtModal(false)}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+    </div>
+  );
 
       default:
         return null;
