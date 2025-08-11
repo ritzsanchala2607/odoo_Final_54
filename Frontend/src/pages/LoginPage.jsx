@@ -37,6 +37,7 @@ const LoginPage = () => {
       console.error('Login error:', err);
       setError('An error occurred during login. Please try again.');
     }
+
   };
 
   return (
@@ -93,5 +94,4 @@ const LoginPage = () => {
     </div>
   );
 };
-
 export default LoginPage;
