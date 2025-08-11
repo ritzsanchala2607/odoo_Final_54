@@ -63,6 +63,25 @@ async function listVenues({ city, sport_type, page = 1, page_size = 10, status, 
   return { count: venues.count, rows };
 }
 
+async function listVenuesAll() {
+  const venues = await Venue.findAll({
+    include: [
+      {
+        model: User,
+        as: 'owner',
+        attributes: ['id', 'full_name', 'email']
+      },
+      {
+        model: Court,
+        as: 'courts',
+        attributes: ['id', 'name', 'sport_type', 'price_per_hour', 'price_per_person', 'capacity', 'is_active'],
+        required: false // LEFT JOIN so venues with 0 courts still appear
+      }
+    ]
+  });
+  return venues;
+}
+
 async function getVenueWithCourts(venueId) {
   const venue = await Venue.findByPk(venueId, {
     include: [
@@ -114,5 +133,5 @@ async function approveVenue(venueId, { status, approved_by, decision_notes }) {
   return venue;
 }
 
-module.exports = { createVenue, listVenues, approveVenue, getVenueWithCourts };
+module.exports = { createVenue, listVenues, approveVenue, getVenueWithCourts, listVenuesAll };
 
