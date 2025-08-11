@@ -61,7 +61,7 @@ const LoginPage = () => {
     } else {
       setError(result.error);
     }
-  };
+  };}
 
   return (
     <div className="login-page">
