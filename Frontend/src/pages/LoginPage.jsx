@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Button from '../components/Button';
@@ -19,23 +20,36 @@ const LoginPage = () => {
     
     try {
       const result = await login(email, password);
-      
-      if (result?.success) {
-        // Get the user role from localStorage which was set by AuthContext
-        const userRole = localStorage.getItem('userRole');
-        
-        // Navigate based on role
-        if (userRole === 'owner') {
-          navigate('/owner-home');
-        } else {
-          navigate('/home');
-        }
+      if (!result.success) throw new Error(result.error || 'Login failed');
+
+      const loggedInUser = result.user;
+
+      if (loggedInUser?.role === 'owner') {
+        localStorage.setItem('userRole', 'owner');
+        navigate('/owner-home');
       } else {
-        setError(result?.error || 'Login failed. Please try again.');
+        localStorage.setItem('userRole', 'user');
+        localStorage.setItem('userPoints', loggedInUser?.points || 500);
+        navigate('/home');
       }
+
     } catch (err) {
-      console.error('Login error:', err);
-      setError('An error occurred during login. Please try again.');
+      console.error(err);
+
+      // Check if it's a network/backend error vs authentication error
+      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
+        // Backend is not available, but we can still navigate
+        console.log('Backend unavailable, proceeding with frontend-only mode');
+        setError('Backend unavailable. Proceeding in demo mode.');
+
+        // Simulate successful login and navigate
+        setTimeout(() => {
+          navigate('/home');
+        }, 1500);
+      } else {
+        // Authentication error
+        setError(err.response?.data?.message || 'Login failed. Please try again.');
+      }
     }
   };
 
@@ -82,12 +96,10 @@ const LoginPage = () => {
               Log In
             </Button>
           </form>
-          <p className="signup-link">
-            Don't have an account?{' '}
-            <Link to="/register" className="signup-button">
-              Sign up
-            </Link>
-          </p>
+
+          <div className="login-footer">
+            <p>Don't have an account? <Link to="/register" className="register-link">Sign Up</Link></p>
+          </div>
         </div>
       </div>
     </div>

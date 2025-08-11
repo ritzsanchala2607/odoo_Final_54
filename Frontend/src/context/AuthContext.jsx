@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }) => {
 
         setUser(response.data.user);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
-        return { success: true };
+        return { success: true, user: response.data.user };
       }
     } catch (error) {
       return { 

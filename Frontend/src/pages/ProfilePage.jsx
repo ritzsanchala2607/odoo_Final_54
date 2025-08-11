@@ -7,7 +7,7 @@ import Avatar from '../components/Avatar';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const { user, refreshUserData } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, refreshUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [profileData, setProfileData] = useState({
@@ -52,7 +52,7 @@ const ProfilePage = () => {
           position: effectiveUser.position || '',
           location: effectiveUser.location || '',
           bio: effectiveUser.short_bio || effectiveUser.bio || '',
-          avatar: getAvatarUrl(effectiveUser.avatar_url)
+          avatar: getAvatarUrl(effectiveUser.avatar_url || effectiveUser.avatar)
         };
         setProfileData(userProfile);
         setEditData(userProfile);
@@ -97,7 +97,7 @@ const ProfilePage = () => {
   };
 
   // Show loading state if user data is not yet available
-  if (isLoading || !user) {
+  if (isLoading || authLoading) {
     return (
       <div className="profile-page">
         <Header showNavigation />
