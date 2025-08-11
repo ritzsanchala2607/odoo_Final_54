@@ -243,23 +243,54 @@ const OwnerHomePage = () => {
     
     try {
       const token = localStorage.getItem('token');
+      
+      // Validate required fields
+      if (!newVenue.name || newVenue.name.trim() === '') {
+        alert('Venue name is required');
+        return;
+      }
+      
+      // Generate slug from name if not provided
+      const venueData = {
+        name: newVenue.name.trim(),
+        slug: newVenue.slug || newVenue.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        description: newVenue.description || '',
+        address: newVenue.address || '',
+        city: newVenue.city || '',
+        latitude: newVenue.latitude ? parseFloat(newVenue.latitude) : null,
+        longitude: newVenue.longitude ? parseFloat(newVenue.longitude) : null,
+        starting_price: newVenue.starting_price ? parseFloat(newVenue.starting_price) : null
+      };
+
+      console.log('Sending venue data:', venueData);
+      console.log('Token:', token ? 'Present' : 'Missing');
+
       const response = await fetch('/api/venues', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          name: newVenue.name,
-          slug: newVenue.slug,
-          description: newVenue.description,
-          address: newVenue.address,
-          city: newVenue.city,
-          latitude: parseFloat(newVenue.latitude),
-          longitude: parseFloat(newVenue.longitude),
-          starting_price: parseFloat(newVenue.starting_price)
-        })
+        body: JSON.stringify(venueData)
       });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      // Try to get the response text first
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
+      
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('Parsed response body:', result);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        console.log('Response was not valid JSON:', responseText);
+        alert('Server returned invalid response format');
+        return;
+      }
 
       if (response.ok) {
         alert('Venue created successfully!');
@@ -277,8 +308,15 @@ const OwnerHomePage = () => {
         });
         fetchVenues(); // Refresh venues list
       } else {
-        const error = await response.json();
-        alert(`Error creating venue: ${error.message || 'Unknown error'}`);
+        // Handle validation errors
+        if (result.errors && Array.isArray(result.errors)) {
+          const errorMessages = result.errors.map(err => `${err.path}: ${err.msg}`).join(', ');
+          console.error('Validation errors:', result.errors);
+          alert(`Validation errors: ${errorMessages}`);
+        } else {
+          console.error('API error:', result);
+          alert(`Error creating venue: ${result.message || 'Unknown error'}`);
+        }
       }
     } catch (error) {
       console.error('Error creating venue:', error);
