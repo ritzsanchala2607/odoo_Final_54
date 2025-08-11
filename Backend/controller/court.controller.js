@@ -25,9 +25,8 @@ async function listAll(req, res) {
   try {
     const courts = await courtService.listAllCourts();
     return res.json({ courts });
-  } catch(e) {
-    console.log(e);
-    return res.status(400).json({ message: e.message });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 }
 
