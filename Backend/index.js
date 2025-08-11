@@ -65,7 +65,7 @@ app.use('/api/slots', slotRouter);
 app.get('/', (req, res) => res.send('QuickCourt API'));
 
 if (process.env.NODE_ENV !== 'production') {
-  const PORT = parseInt(process.env.PORT || '5000', 10);
+  const PORT = parseInt(process.env.PORT || '3000', 10);
   app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }
 

@@ -15,6 +15,40 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
+        { email, password },
+        { withCredentials: true }
+      );
+
+      console.log(response.data); // Optional: for debugging
+      console.log(response.data.user.role);
+      // If login succeeds
+      // navigate('/home');
+      if (response.data.user.role === 'owner') {
+        navigate('/owner-home'); // Owner-specific home page
+      } else {
+        navigate('/home'); // Normal user home page
+      }
+
+    } catch (err) {
+      console.error(err);
+
+      // Check if it's a network/backend error vs authentication error
+      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
+        // Backend is not available, but we can still navigate
+        console.log('Backend unavailable, proceeding with frontend-only mode');
+        setError('Backend unavailable. Proceeding in demo mode.');
+
+        // Simulate successful login and navigate
+        setTimeout(() => {
+          navigate('/home');
+        }, 1500);
+      } else {
+        // Authentication error
+        setError(err.response?.data?.message || 'Login failed. Please try again.');
+      }
     setError('');
     
     const result = await login(email, password);
