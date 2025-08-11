@@ -425,12 +425,7 @@ const VenuesPage = () => {
           </Button>
         </aside>
 
-        {/* Main Content */}
         <main className="venues-content">
-          {/* <h2 className="page-title">
-            Sports Venues in Ahmedabad: Discover and Book Nearby Venues
-          </h2> */}
-
           {loading ? (
             <p>Loading venues...</p>
           ) : (
