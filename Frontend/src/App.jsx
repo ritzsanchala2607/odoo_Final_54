@@ -24,7 +24,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-otp" element={<VerifyOtpPage />} />
             <Route path="/home" element={<HomePage />} />
-                <Route path="/owner-home" element = {<OwnerHomePage/>}/>
+            <Route path="/owner-home" element={<OwnerHomePage />} />
             <Route path="/venues" element={<VenuesPage />} />
             <Route path="/mybookings" element={<MyBookingsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
