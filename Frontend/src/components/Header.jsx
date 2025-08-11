@@ -18,7 +18,7 @@ const Header = ({ showNavigation = false }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
-  const { isAuthenticated, user, logout, checkAuthStatus } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
   const coinFrames = React.useMemo(() => [coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9], []);

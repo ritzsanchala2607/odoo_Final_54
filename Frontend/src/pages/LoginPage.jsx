@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -11,29 +12,25 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
-        { email, password },
-        { withCredentials: true }
-      );
+      const result = await login(email, password);
+      if (!result.success) throw new Error(result.error || 'Login failed');
 
-      console.log(response.data); // Optional: for debugging
-      console.log(response.data.user.role);
-      
-      // If login succeeds, navigate based on role
-      if (response.data.user.role === 'owner') {
-         localStorage.setItem('userRole', 'owner');
-        navigate('/owner-home'); // Owner-specific home page
+      const loggedInUser = result.user;
+
+      if (loggedInUser?.role === 'owner') {
+        localStorage.setItem('userRole', 'owner');
+        navigate('/owner-home');
       } else {
-          localStorage.setItem('userRole', 'user');
-            localStorage.setItem('userPoints', response.data.user.points || 500);
-        navigate('/home'); // Normal user home page
+        localStorage.setItem('userRole', 'user');
+        localStorage.setItem('userPoints', loggedInUser?.points || 500);
+        navigate('/home');
       }
 
     } catch (err) {
