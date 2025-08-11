@@ -10,11 +10,12 @@ const Header = ({ showNavigation = false }) => {
   const [scrolled, setScrolled] = useState(false);
 
   const { isAuthenticated, logout, user, refreshUserData } = useAuth();
-
-
-  const { isAuthenticated, logout } = useAuth();
  const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
+
+
+
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
