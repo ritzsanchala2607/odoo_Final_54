@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     status: { type: DataTypes.TEXT, defaultValue: 'pending' },
     approved_by: { type: DataTypes.UUID },
     approved_at: DataTypes.DATE,
+    max_courts: DataTypes.INTEGER, // new
     created_at: DataTypes.DATE,
     updated_at: DataTypes.DATE
   }, {
