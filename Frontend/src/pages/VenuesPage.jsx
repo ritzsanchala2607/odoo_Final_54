@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import './VenuesPage.css';
 
 const VenuesPage = () => {
+  const navigate = useNavigate();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState([0, 5500]);
@@ -119,7 +122,7 @@ const VenuesPage = () => {
                   <p>📍 {venue.location}</p>
                   <p>₹ {venue.price} per hour</p>
                   <p>⭐ {venue.rating}</p>
-                  <Button variant="primary">View Details</Button>
+                  <Button variant="primary" onClick={() => navigate(`/venue/${venue.id}`)}> View Details </Button>
                 </div>
               </div>
             ))}
