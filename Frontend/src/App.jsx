@@ -44,6 +44,7 @@ function App() {
 
             <Route path="/home" element={<HomePage />} />
             <Route path="/venues" element={<VenuesPage />} />
+            <Route path="/owner-home" element={<OwnerHomePage />} />
             <Route path="/mybookings" element={<MyBookingsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/venue/:id" element={<VenueDetails />} />
