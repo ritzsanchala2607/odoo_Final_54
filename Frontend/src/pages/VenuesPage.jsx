@@ -19,34 +19,64 @@ const VenuesPage = () => {
 
   const categories = [
     "All",
-    "Conference Halls",
-    "Meeting Rooms",
-    "Event Spaces",
-    "Auditoriums",
-    "Outdoor Venues",
+    "Badminton",
+    "Table Tennis",
+    "Cricket",
+    "Football",
+    "Tennis",
+    "Other",
   ];
 
-  // ✅ Fetch data from API
+  // Fetch courts then aggregate into venues
   useEffect(() => {
     const fetchCourts = async () => {
       try {
         setLoading(true);
         const res = await axios.get(`http://localhost:3000/api/courts/all`);
-        // Your backend returns { courts: [...] }
-        const mapped = res.data.courts.map((court) => ({
-          id: court.id,
-          name: court.name,
-          category: court.sport_type || "Other",
-          location: court.venue?.address || court.venue?.name || "Unknown",
-          capacity: court.capacity ? `${court.capacity} people` : "",
-          price: court.price_per_hour || 0,
-          rating: court.venue?.rating_avg || 0,
-          type: "Unknown", // venue_type is not available in the model
-          distance: court.venue?.distance || 0, // distance is not in the model
-          image: "https://via.placeholder.com/400x300?text=Venue+Image", // image_url is not available
-          available: court.is_active,
+        const courts = res.data.courts || [];
+
+        const aggregatedByVenue = new Map();
+
+        for (const court of courts) {
+          const v = court.venue;
+          if (!v) continue;
+          const venueId = v.id;
+          const existing = aggregatedByVenue.get(venueId) || {
+            id: venueId,
+            name: v.name,
+            location: v.address || v.city || "",
+            rating: Number(v.rating_avg) || 0,
+            image: "https://via.placeholder.com/400x300?text=Venue+Image",
+            available: true,
+            categories: new Set(),
+            minPrice: Number.POSITIVE_INFINITY,
+            courtsCount: 0,
+          };
+
+          existing.courtsCount += 1;
+          existing.categories.add(court.sport_type || "Other");
+          const price = Number(court.price_per_hour || 0);
+          if (!Number.isNaN(price)) existing.minPrice = Math.min(existing.minPrice, price);
+
+          aggregatedByVenue.set(venueId, existing);
+        }
+
+        const aggregatedList = Array.from(aggregatedByVenue.values()).map((v) => ({
+          id: v.id,
+          name: v.name,
+          category: (v.categories.size === 1 ? Array.from(v.categories)[0] : "Mixed"),
+          categories: Array.from(v.categories),
+          location: v.location,
+          capacity: v.courtsCount ? `${v.courtsCount} courts` : "",
+          price: v.minPrice === Number.POSITIVE_INFINITY ? 0 : v.minPrice,
+          rating: v.rating,
+          type: "Venue",
+          distance: 0,
+          image: v.image,
+          available: v.available,
         }));
-        setVenues(mapped);
+
+        setVenues(aggregatedList);
       } catch (error) {
         console.error("Error fetching courts", error);
       } finally {
@@ -56,18 +86,14 @@ const VenuesPage = () => {
     fetchCourts();
   }, []);
 
-
-
-  // ✅ Filtering Logic
+  // Filtering Logic
   const filteredVenues = venues.filter((venue) => {
-    const matchesSearch =
-      venue.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      selectedCategory === "All" || venue.category === selectedCategory;
-    const matchesPrice =
-      venue.price >= priceRange[0] && venue.price <= priceRange[1];
+      selectedCategory === "All" || (venue.categories || []).includes(selectedCategory) || venue.category === selectedCategory;
+    const matchesPrice = venue.price >= priceRange[0] && venue.price <= priceRange[1];
     const matchesRating = !rating || venue.rating >= rating;
-    const matchesLocation = venue.location.toLowerCase().includes(locationQuery.toLowerCase());
+    const matchesLocation = (venue.location || "").toLowerCase().includes(locationQuery.toLowerCase());
 
     return (
       matchesSearch &&
@@ -171,9 +197,11 @@ const VenuesPage = () => {
                       <p>
                         <strong>Rating:</strong> {venue.rating}
                       </p>
-                      <p>
-                        <strong>Distance:</strong> {venue.distance} km away
-                      </p>
+                      {venue.categories && venue.categories.length > 0 && (
+                        <p>
+                          <strong>Sports:</strong> {venue.categories.join(", ")}
+                        </p>
+                      )}
                       <Button
                         variant="primary"
                         onClick={() => navigate(`/venue/${venue.id}`)}

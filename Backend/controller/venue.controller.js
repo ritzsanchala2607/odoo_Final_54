@@ -67,5 +67,16 @@ async function approve(req, res) {
   }
 }
 
-module.exports = { create, list, listAll, get, approve };
+
+async function listAll(req, res) {
+  try {
+    const venues = await venueService.listAllVenues();
+    return res.json({ venues });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+module.exports = {
+  listAll, create, list, get, approve };
 

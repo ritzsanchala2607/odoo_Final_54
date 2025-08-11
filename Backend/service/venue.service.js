@@ -133,5 +133,18 @@ async function approveVenue(venueId, { status, approved_by, decision_notes }) {
   return venue;
 }
 
-module.exports = { createVenue, listVenues, approveVenue, getVenueWithCourts, listVenuesAll };
+
+async function listAllVenues() {
+  return Venue.findAll({
+    include: [{
+      model: VenuePhoto,
+      as: 'photos',
+      attributes: ['url', 'is_cover'],
+      required: false
+    }]
+  });
+}
+
+module.exports = {
+  listAllVenues, createVenue, listVenues, approveVenue, getVenueWithCourts };
 

@@ -1,24 +1,70 @@
 const { Booking, Payment, Court, Venue, User, BookingParticipant } = require('../helper/db.helper');
 const { v4: uuidv4 } = require('uuid');
+const { Op } = require('sequelize');
 
 async function createBooking(payload) {
   const booking_ref = `BK-${uuidv4().slice(0, 8).toUpperCase()}`;
-  let player_capacity = payload.player_capacity;
-  if (!player_capacity) {
-    const court = await Court.findByPk(payload.court_id);
-    if (court) player_capacity = court.capacity || 1;
+
+  if (!payload.court_id) throw new Error('court_id is required');
+  if (!payload.start_at || !payload.end_at) throw new Error('start_at and end_at are required');
+
+  const startAt = new Date(payload.start_at);
+  const endAt = new Date(payload.end_at);
+  if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
+    throw new Error('Invalid start_at or end_at');
   }
-  // compute unit_price by pricing_mode
+  if (startAt >= endAt) throw new Error('start_at must be before end_at');
+
+  // Load court and validate venue linkage
   const court = await Court.findByPk(payload.court_id);
+  if (!court) throw new Error('Court not found');
+
+  const venueId = payload.venue_id ? payload.venue_id : court.venue_id;
+  if (payload.venue_id && payload.venue_id !== court.venue_id) {
+    throw new Error('Court does not belong to the provided venue');
+  }
+
+  // Prevent overlapping bookings for the same court
+  const overlapping = await Booking.findOne({
+    where: {
+      court_id: court.id,
+      status: { [Op.ne]: 'cancelled' },
+      [Op.and]: [
+        { start_at: { [Op.lt]: endAt } },
+        { end_at: { [Op.gt]: startAt } },
+      ],
+    },
+  });
+  if (overlapping) {
+    throw new Error('This court is already booked for the selected time');
+  }
+
+  // Determine capacity default from court
+  let player_capacity = payload.player_capacity;
+  if (!player_capacity) player_capacity = court.capacity || 1;
+
+  // compute unit_price by pricing_mode
   const pricing_mode = payload.pricing_mode || 'per_hour';
   let unit_price = 0;
   if (pricing_mode === 'per_person') {
-    unit_price = court?.price_per_person || 0;
+    unit_price = court.price_per_person || 0;
   } else {
-    unit_price = court?.price_per_hour || 0;
+    unit_price = court.price_per_hour || 0;
   }
-  const effective_refund_ratio = court?.refund_ratio_override ?? null;
-  const booking = await Booking.create({ ...payload, booking_ref, player_capacity, pricing_mode, unit_price, effective_refund_ratio });
+  const effective_refund_ratio = court.refund_ratio_override ?? null;
+
+  const booking = await Booking.create({
+    ...payload,
+    venue_id: venueId,
+    start_at: startAt,
+    end_at: endAt,
+    booking_ref,
+    player_capacity,
+    pricing_mode,
+    unit_price,
+    effective_refund_ratio,
+  });
+
   // host auto-joins as 'host'
   await BookingParticipant.create({ booking_id: booking.id, user_id: payload.user_id, role: 'host', status: 'joined' });
   return booking;
