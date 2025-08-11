@@ -98,24 +98,30 @@ const OwnerHomePage = () => {
 
   const handleVenueSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
-    // if (!token) {
-    //   alert("You are not logged in. Please log in to create a venue.");
-    //   return;
-    // }
+
     try {
-      const response = await fetch("http://localhost:3000/api/venues/", {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/venues", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newVenue),
+        body: JSON.stringify({
+          name: newVenue.name,
+          slug: newVenue.slug,
+          description: newVenue.description,
+          address: newVenue.address,
+          city: newVenue.city,
+          latitude: parseFloat(newVenue.latitude),
+          longitude: parseFloat(newVenue.longitude),
+          starting_price: parseFloat(newVenue.starting_price),
+        }),
       });
-      const data = await response.json();
-      console.log("Venue created:", data);
+
       if (response.ok) {
-        alert(data.message);
+        const result = await response.json();
+        alert("Venue created successfully!");
         setShowVenueModal(false);
         setNewVenue({
           name: "",
@@ -128,52 +134,75 @@ const OwnerHomePage = () => {
           starting_price: "",
           maxCourts: 1,
         });
+        // Refresh venues list
+        fetchVenues();
       } else {
-        alert(data.message || "Failed to create venue");
+        const error = await response.json();
+        alert(`Error creating venue: ${error.message || "Unknown error"}`);
       }
-    } catch (err) {
-      alert(err.message || "Something went wrong");
+    } catch (error) {
+      console.error("Error creating venue:", error);
+      alert("Failed to create venue. Please try again.");
     }
   };
 
   const [showVenueModal, setShowVenueModal] = useState(false);
 
-  const submitVenueRequest = (e) => {
-    e.preventDefault();
-    alert(`Venue request sent to admin:\n${JSON.stringify(newVenue, null, 2)}`);
-    setShowVenueModal(false);
-    setNewVenue({ name: "", location: "", sports: "", price: "" });
-  };
-  const user = {
-    name: "John Smith",
-    email: "john.smith@quickcourt.com",
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-  };
+  // Get the current user from AuthContext
 
+  // Fallback for missing user data
+  const displayName = user?.full_name || user?.name || user?.email || "Owner";
+  const displayEmail = user?.email || "";
+  const displayAvatar =
+    user?.avatar_url ||
+    user?.avatar ||
+    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face";
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+
     console.log("Logout clicked");
   };
 
-  // Initial dummy venues
-  const [venues, setVenues] = useState([
-    {
-      id: 1,
-      name: "Arena Sports Complex",
-      location: "City Center",
-      maxCourts: 6,
-      courts: [
-        { id: 1, name: "Court A", sport: "Badminton", capacity: 4, price: 500 },
-      ],
-    },
-    {
-      id: 2,
-      name: "Metro Sports Hub",
-      location: "East Road",
-      maxCourts: 4,
-      courts: [],
-    },
-  ]);
+  // Venues state
+  const [venues, setVenues] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch venues from API
+  const fetchVenues = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/venues", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setVenues(result.rows || result || []);
+      } else {
+        console.error("Failed to fetch venues");
+      }
+    } catch (error) {
+      console.error("Error fetching venues:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch venues on component mount
+  React.useEffect(() => {
+    fetchVenues();
+  }, []);
 
   // const [showVenueModal, setShowVenueModal] = useState(false);
   const [showCourtModal, setShowCourtModal] = useState(false);
@@ -202,27 +231,63 @@ const OwnerHomePage = () => {
     setShowCourtModal(true);
   };
 
-  const handleCourtSubmit = (e) => {
+  const handleCourtSubmit = async (e) => {
     e.preventDefault();
     if (!selectedVenue) return;
 
-    const updatedVenues = venues.map((v) => {
-      if (v.id === selectedVenue.id) {
-        if (v.courts.length < v.maxCourts) {
-          return {
-            ...v,
-            courts: [...v.courts, { id: Date.now(), ...newCourt }],
-          };
-        }
-      }
-      return v;
-    });
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/courts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          venue_id: selectedVenue.id,
+          name: newCourt.name,
+          sport_type: newCourt.sport_type,
+          price_per_hour: parseFloat(newCourt.price_per_hour),
+          price_per_person: newCourt.price_per_person
+            ? parseFloat(newCourt.price_per_person)
+            : null,
+          allow_per_hour: newCourt.allow_per_hour,
+          allow_per_person: newCourt.allow_per_person,
+          refund_ratio_override: newCourt.refund_ratio_override
+            ? parseFloat(newCourt.refund_ratio_override)
+            : null,
+          capacity: parseInt(newCourt.capacity),
+          is_active: newCourt.is_active,
+        }),
+      });
 
-    setVenues(updatedVenues);
-    setShowCourtModal(false);
-    setNewCourt({ courtName: "", sport: "", capacity: "", price: "" });
+      if (response.ok) {
+        const result = await response.json();
+        alert("Court created successfully!");
+        setShowCourtModal(false);
+        setNewCourt({
+          name: "",
+          sport_type: "",
+          price_per_hour: "",
+          price_per_person: "",
+          allow_per_hour: true,
+          allow_per_person: false,
+          refund_ratio_override: "",
+          capacity: 1,
+          is_active: true,
+        });
+        // Optionally refresh courts list here
+      } else {
+        const error = await response.json();
+        alert(`Error creating court: ${error.message || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error creating court:", error);
+      alert("Failed to create court. Please try again.");
+    }
   };
 
+  // Mock data
   const courtBookingData = [
     {
       court: "Arena Sports Complex - Court A",
@@ -1103,28 +1168,35 @@ const OwnerHomePage = () => {
             </div>
 
             <div className="venue-list">
-              {venues.map((venue) => (
-                <div key={venue.id} className="venue-card">
-                  <div className="venue-info">
-                    <h4>{venue.name}</h4>
-                    <p>
-                      <MapPin size={14} /> {venue.location}
-                    </p>
-                    <p>
-                      Courts: {venue.courts.length} / {venue.maxCourts}
-                    </p>
-                  </div>
-
-                  <div className="venue-actions">
-                    <button
-                      disabled={venue.courts.length >= venue.maxCourts}
-                      onClick={() => openAddCourtModal(venue.id)}
-                    >
-                      Add Court
-                    </button>
-                  </div>
+              {loading ? (
+                <div className="loading">Loading venues...</div>
+              ) : venues.length === 0 ? (
+                <div className="no-venues">
+                  No venues found. Create your first venue!
                 </div>
-              ))}
+              ) : (
+                venues.map((venue) => (
+                  <div key={venue.id} className="venue-card">
+                    <div className="venue-info">
+                      <h4>{venue.name}</h4>
+                      <p>
+                        <MapPin size={14} /> {venue.city || venue.address}
+                      </p>
+                      <p>Status: {venue.status}</p>
+                      <p>Starting Price: ₹{venue.starting_price}/hr</p>
+                    </div>
+
+                    <div className="venue-actions">
+                      <button
+                        onClick={() => openAddCourtModal(venue.id)}
+                        disabled={venue.status !== "approved"}
+                      >
+                        Add Court
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {showVenueModal && (
