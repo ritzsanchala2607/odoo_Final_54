@@ -11,7 +11,6 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
 import VenueDetails from './pages/VenueDetails';
 import ProtectedRoute from './components/ProtectedRoute';
-
 import OwnerHomePage  from './pages/OwnerHomePage';
 import Dashboard from './pages/Dashboard';
 import './App.css';
