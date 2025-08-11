@@ -24,6 +24,50 @@ async function createBooking(payload) {
   return booking;
 }
 
+async function getBookings(query = {}) {
+  const where = {};
+  
+  if (query.user_id) where.user_id = query.user_id;
+  if (query.status) where.status = query.status;
+  if (query.venue_id) where.venue_id = query.venue_id;
+  
+  return Booking.findAll({ 
+    where,
+    include: [
+      { model: User, attributes: ['id', 'full_name', 'email'] },
+      { model: Court, attributes: ['id', 'name'] },
+      { model: Venue, attributes: ['id', 'name'] }
+    ],
+    order: [['created_at', 'DESC']] 
+  });
+}
+
+async function getBookingById(id) {
+  return Booking.findByPk(id, {
+    include: [
+      { model: User, attributes: ['id', 'full_name', 'email'] },
+      { model: Court, attributes: ['id', 'name'] },
+      { model: Venue, attributes: ['id', 'name'] }
+    ]
+  });
+}
+
+async function updateBooking(id, updates) {
+  const booking = await Booking.findByPk(id);
+  if (!booking) throw new Error('Booking not found');
+  
+  await booking.update(updates);
+  return booking;
+}
+
+async function deleteBooking(id) {
+  const booking = await Booking.findByPk(id);
+  if (!booking) throw new Error('Booking not found');
+  
+  await booking.destroy();
+  return { message: 'Booking deleted successfully' };
+}
+
 async function listMyBookings(user_id) {
   return Booking.findAll({ where: { user_id }, order: [['created_at', 'DESC']] });
 }
@@ -85,5 +129,17 @@ async function leaveBooking(booking_id, user_id) {
   return participant;
 }
 
-module.exports = { createBooking, listMyBookings, cancelBooking, joinBooking, approveParticipant, rejectParticipant, leaveBooking };
+module.exports = { 
+  createBooking, 
+  getBookings, 
+  getBookingById, 
+  updateBooking, 
+  deleteBooking,
+  listMyBookings, 
+  cancelBooking, 
+  joinBooking, 
+  approveParticipant, 
+  rejectParticipant, 
+  leaveBooking 
+};
 
