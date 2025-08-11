@@ -18,7 +18,7 @@ const Header = ({ showNavigation = false }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout, checkAuthStatus } = useAuth();
   const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
   const coinFrames = React.useMemo(() => [coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9], []);
@@ -31,12 +31,7 @@ const Header = ({ showNavigation = false }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    // Refresh user data when component mounts to ensure we have the latest avatar
-    if (isAuthenticated && user) {
-      refreshUserData();
-    }
-  }, [isAuthenticated, user, refreshUserData]);
+  // Avoid forcing an auth re-check here; AuthProvider handles hydration
 
   const handleLogout = async () => {
     await logout();
@@ -63,12 +58,12 @@ const Header = ({ showNavigation = false }) => {
       return user.avatar_url;
     }
     // Fallback to default avatar
-    return '../assets/user_img.png';
+    return '../assets/user_profile.jpg';
   };
 
   const handleAvatarError = (e) => {
     // If user's avatar fails to load, fallback to default
-    e.target.src = '../assets/user_img.png';
+    e.target.src = '../assets/user_profile.jpg';
   };
 
 

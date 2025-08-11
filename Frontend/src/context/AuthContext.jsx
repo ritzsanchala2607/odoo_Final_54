@@ -15,8 +15,21 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const STORAGE_KEY = 'auth_user';
 
   useEffect(() => {
+    // Hydrate from localStorage first so UI has data even if server endpoints are missing
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setUser(parsed);
+        setIsAuthenticated(true);
+      } catch (_) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+    // Best-effort server check; if endpoint doesn't exist, fallback to local state
     checkAuthStatus();
   }, []);
 
@@ -25,13 +38,18 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/check-auth`, {
         withCredentials: true
       });
-      if (response.data.isAuthenticated) {
+      if (response.data?.isAuthenticated && response.data?.user) {
         setIsAuthenticated(true);
         setUser(response.data.user);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
+      } else {
+        // If server says not authenticated, clear local
+        localStorage.removeItem(STORAGE_KEY);
+        setIsAuthenticated(false);
+        setUser(null);
       }
     } catch (error) {
-      setIsAuthenticated(false);
-      setUser(null);
+      // Server route may not exist; do not clear local state in this case
     } finally {
       setLoading(false);
     }
@@ -48,6 +66,7 @@ export const AuthProvider = ({ children }) => {
       if (response.data.user) {
         setIsAuthenticated(true);
         setUser(response.data.user);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
         return { success: true };
       }
     } catch (error) {
@@ -68,20 +87,32 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsAuthenticated(false);
       setUser(null);
+      localStorage.removeItem(STORAGE_KEY);
     }
   };
 
   const refreshUserData = async () => {
+    // Try server, else fall back to localStorage
     try {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/me`, {
         withCredentials: true
       });
-      if (response.data.user) {
+      if (response.data?.user) {
         setUser(response.data.user);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
         return response.data.user;
       }
-    } catch (error) {
-      console.error('Failed to refresh user data:', error);
+    } catch (_) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setUser(parsed);
+          return parsed;
+        } catch (_) {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
     }
   };
 
