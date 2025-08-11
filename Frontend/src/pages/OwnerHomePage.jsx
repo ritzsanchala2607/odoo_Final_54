@@ -331,7 +331,6 @@ const OwnerHomePage = () => {
     setShowCourtForm(true);
   };
 
-
   // Mock data
   const courtBookingData = [
     { court: 'Arena Sports Complex - Court A', venue: 'Arena Sports Complex', bookings: 245, sport: 'Badminton', revenue: 12250, rating: 4.8, utilization: 92, peakHours: '6-8 PM' },
