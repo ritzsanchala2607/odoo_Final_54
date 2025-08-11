@@ -5,6 +5,7 @@ const { validation } = require('../helper/validation');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 router.get('/', courtController.list);
+router.get('/all', courtController.listAll);
 router.post('/', requireAuth, requireRole('owner', 'admin'), validation.courtCreate, courtController.create);
 
 module.exports = router;

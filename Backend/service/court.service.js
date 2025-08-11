@@ -8,5 +8,9 @@ async function listCourts({ venue_id }) {
   return Court.findAll({ where: { venue_id } });
 }
 
-module.exports = { createCourt, listCourts };
+async function listAllCourts() {
+  return Court.findAll();
+}
+
+module.exports = { createCourt, listCourts  , listAllCourts};
 

@@ -21,5 +21,14 @@ async function list(req, res) {
   }
 }
 
-module.exports = { create, list };
+async function listAll(req, res) {
+  try {
+    const courts = await courtService.listAllCourts();
+    return res.json({ courts });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { create, list , listAll };
 
