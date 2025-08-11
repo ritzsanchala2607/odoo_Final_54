@@ -3,6 +3,7 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 // Initialize DB (loads models and associations)
 require('./helper/db.helper');
@@ -21,16 +22,15 @@ const slotRouter = require('./routes/slot.routes');
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || '*',
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: 'http://localhost:5173', // your frontend's URL
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/avatar', express.static(path.join(__dirname, 'public/avatar')));
 
 // API routes
 app.use('/api/user', userRouter); // signup, login
