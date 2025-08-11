@@ -5,7 +5,6 @@ import Input from '../components/Input';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
-import Avatar from '../components/Avatar';
 import Select from '../components/Select';
 import './RegisterPage.css';
 
@@ -240,7 +239,7 @@ const RegisterPage = () => {
         <div className="register-form">
           <div className="register-header">
             <h1>Create Account</h1>
-            <p>Join the Skill Swap community</p>
+            <p>Join the VenueBook community</p>
           </div>
 
           <form onSubmit={handleSubmit}>
