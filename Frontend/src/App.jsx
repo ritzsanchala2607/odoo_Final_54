@@ -9,6 +9,7 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import VenueDetails from './pages/VenueDetails';
+import Dashboard from './pages/Dashboard';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/mybookings" element={<MyBookingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/venue/:id" element={<VenueDetails />} />
+          <Route path="/admin" element={<Dashboard />} />
           {/* Catch-all route for any unmatched paths */}
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
