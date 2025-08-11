@@ -7,6 +7,11 @@ module.exports = (sequelize, DataTypes) => {
     venue_id: { type: DataTypes.UUID, allowNull: false },
     start_at: { type: DataTypes.DATE, allowNull: false },
     end_at: { type: DataTypes.DATE, allowNull: false },
+    visibility: { type: DataTypes.TEXT, defaultValue: 'private' },
+    player_capacity: { type: DataTypes.SMALLINT },
+    allow_auto_join: { type: DataTypes.BOOLEAN, defaultValue: true },
+    join_code: { type: DataTypes.TEXT, unique: true },
+    host_notes: { type: DataTypes.TEXT },
     status: { type: DataTypes.TEXT, defaultValue: 'confirmed' },
     total_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     payment_id: { type: DataTypes.UUID },
@@ -24,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     Booking.belongsTo(models.Court, { foreignKey: 'court_id', as: 'court' });
     Booking.belongsTo(models.Venue, { foreignKey: 'venue_id', as: 'venue' });
     Booking.belongsTo(models.Payment, { foreignKey: 'payment_id', as: 'payment' });
+    Booking.hasMany(models.BookingParticipant, { foreignKey: 'booking_id', as: 'participants' });
   };
 
   return Booking;

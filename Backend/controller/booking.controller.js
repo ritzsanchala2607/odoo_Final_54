@@ -31,4 +31,41 @@ async function cancel(req, res) {
 }
 
 module.exports = { create, myBookings, cancel };
+async function join(req, res) {
+  try {
+    const record = await bookingService.joinBooking(req.params.id, req.user.id);
+    return res.status(201).json({ participant: record });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function approve(req, res) {
+  try {
+    const record = await bookingService.approveParticipant(req.params.id, req.params.user_id, req.user.id);
+    return res.json({ participant: record });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function reject(req, res) {
+  try {
+    const record = await bookingService.rejectParticipant(req.params.id, req.params.user_id, req.user.id);
+    return res.json({ participant: record });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function leave(req, res) {
+  try {
+    const record = await bookingService.leaveBooking(req.params.id, req.user.id);
+    return res.json({ participant: record });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { create, myBookings, cancel, join, approve, reject, leave };
 

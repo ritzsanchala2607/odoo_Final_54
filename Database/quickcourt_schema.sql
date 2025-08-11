@@ -125,11 +125,19 @@ CREATE TABLE bookings (
   status       text NOT NULL DEFAULT 'confirmed',
   total_amount numeric(10,2) NOT NULL,
   payment_id   uuid REFERENCES payments(id),
+  -- community fields
+  visibility   text NOT NULL DEFAULT 'private' CHECK (visibility IN ('private','public','invite_only')),
+  player_capacity smallint,
+  allow_auto_join boolean DEFAULT true,
+  join_code     text UNIQUE,
+  host_notes    text,
   created_at   timestamptz DEFAULT now(),
   updated_at   timestamptz DEFAULT now(),
   cancelled_at timestamptz,
   cancel_reason text
 );
+
+CREATE INDEX IF NOT EXISTS idx_bookings_visibility ON bookings(visibility);
 
 -- Payments
 CREATE TABLE payments (
@@ -186,3 +194,17 @@ CREATE TABLE notifications (
   is_read boolean DEFAULT false,
   created_at timestamptz DEFAULT now()
 );
+
+-- Booking participants (host + players)
+CREATE TABLE booking_participants (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id uuid NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role text NOT NULL DEFAULT 'player' CHECK (role IN ('host','player')),
+  status text NOT NULL DEFAULT 'joined' CHECK (status IN ('joined','requested','invited','rejected','cancelled')),
+  joined_at timestamptz DEFAULT now(),
+  UNIQUE (booking_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_booking_participants_booking ON booking_participants(booking_id);
+CREATE INDEX IF NOT EXISTS idx_booking_participants_user ON booking_participants(user_id);
