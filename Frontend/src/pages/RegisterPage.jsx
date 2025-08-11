@@ -26,12 +26,9 @@ const RegisterPage = () => {
   const [generatedOtp, setGeneratedOtp] = useState(''); // Store generated OTP for verification
 
   const roleOptions = [
-    'Student',
-    'Professional',
-    'Freelancer',
-    'Entrepreneur',
-    'Teacher',
-    'Other'
+    { label: 'User', value: 'user' },
+    { label: 'Owner', value: 'owner' },
+    { label: 'Admin', value: 'admin' }
   ];
 
   const handleInputChange = (e) => {
@@ -116,23 +113,35 @@ const RegisterPage = () => {
     console.log(formData);
 
     if (Object.keys(newErrors).length === 0) {
+      let avatarUrl = '';
       try {
-        // Attempt to hit backend signup to trigger OTP email (best-effort)
-        try {
-          await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/register`, {
-            full_name: formData.username,
-            email: formData.email,
-            password: formData.password,
-            role: formData.role,
-          }, { withCredentials: true });
-        } catch (err) {
-          console.warn('Backend signup failed or unavailable. Proceeding to OTP step anyway.', err?.message);
+        // 1. Upload avatar image if present
+        if (formData.avatar) {
+          const formDataObj = new FormData();
+          formDataObj.append('avatar', formData.avatar);
+          const uploadRes = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/upload-avatar`, formDataObj, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true,
+          });
+          avatarUrl = uploadRes.data.avatar_url;
         }
-
-        // Generate OTP for demo-only fallback and move to verify page
+      } catch (err) {
+        setErrors({ general: 'Avatar upload failed. Please try again.' });
+        console.log(err);
+        return;
+      }
+      try {
+        // 2. Register user with avatar_url
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/register`, {
+          full_name: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          avatar_url: avatarUrl,
+        });
+        // 3. Generate OTP for demo-only fallback and move to verify page
         const otp = generateOTP();
         console.log('Generated OTP (demo fallback):', otp);
-
         // Go to verify-otp page, pass email in query
         navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
       } catch (error) {
