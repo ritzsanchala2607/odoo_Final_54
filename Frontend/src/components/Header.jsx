@@ -1,11 +1,19 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 
 const Header = ({ showNavigation = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    onScroll();
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const navigationItems = [
     { label: 'Home', path: '/home' },
@@ -15,12 +23,12 @@ const Header = ({ showNavigation = false }) => {
   ];
 
   return (
-    <header className="header">
+    <header className={`header ${scrolled ? 'scrolled' : ''}`}>
       <div className="header-container">
         <div className="header-left">
           <div className="logo" onClick={() => navigate('/home')}>
-            <span className="logo-icon">🏢</span>
-            <span className="logo-text">VenueBook</span>
+            <span className="logo-icon">🏀</span>
+            <span className="logo-text">QuickCourt</span>
           </div>
         </div>
 
@@ -42,11 +50,14 @@ const Header = ({ showNavigation = false }) => {
               <div className="search-container">
                 <input
                   type="text"
-                  placeholder="Search venues..."
+                  placeholder="Search sports, venues, players..."
                   className="search-input"
                 />
               </div>
-              <button className="notification-btn">🔔</button>
+              <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+              <button className="get-started-btn" onClick={() => navigate('/register')}>
+                Sign Up
+              </button>
               <div className="user-avatar" onClick={() => navigate('/profile')}>
                 <img src="../assets/user_img.png" alt="User" />
               </div>
@@ -56,9 +67,10 @@ const Header = ({ showNavigation = false }) => {
 
         {!showNavigation && (
           <div className="header-right">
-            <button className="nav-link" onClick={() => navigate('/venues')}>Browse Venues</button>
+            <button className="nav-link" onClick={() => navigate('/venues')}>Venues</button>
             <button className="nav-link" onClick={() => navigate('/mybookings')}>My Bookings</button>
             <button className="nav-link" onClick={() => navigate('/profile')}>Profile</button>
+            <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
             <button className="get-started-btn" onClick={() => navigate('/home')}>
               Get Started
             </button>

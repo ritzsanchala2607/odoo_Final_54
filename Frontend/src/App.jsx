@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import VenuesPage from './pages/VenuesPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
+import VerifyOtpPage from './pages/VerifyOtpPage';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/venues" element={<VenuesPage />} />
           <Route path="/mybookings" element={<MyBookingsPage />} />

@@ -1,10 +1,14 @@
-
 .header {
   background: white;
   border-bottom: 1px solid #e5e5e5;
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: box-shadow 0.2s ease;
+}
+
+.header.scrolled {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .header-container {
@@ -27,14 +31,15 @@
   align-items: center;
   cursor: pointer;
   font-size: 20px;
-  font-weight: 600;
-  color: #2d2d2d;
+  font-weight: 800;
+  color: #1f2937;
 }
 
 .logo-icon {
   font-size: 24px;
   margin-right: 8px;
-  color: #6b5b95;
+  color: #10b981;
+  /* green accent */
 }
 
 .header-nav {
@@ -47,7 +52,7 @@
   background: none;
   border: none;
   font-size: 16px;
-  color: #666;
+  color: #6b7280;
   cursor: pointer;
   padding: 8px 0;
   position: relative;
@@ -55,7 +60,7 @@
 
 .nav-item:hover,
 .nav-item.active {
-  color: #2d2d2d;
+  color: #111827;
 }
 
 .nav-item.active::after {
@@ -65,7 +70,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #6b5b95;
+  background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b);
 }
 
 .header-right {
@@ -78,28 +83,29 @@
   background: none;
   border: none;
   font-size: 16px;
-  color: #666;
+  color: #6b7280;
   cursor: pointer;
   padding: 8px 16px;
 }
 
 .nav-link:hover {
-  color: #2d2d2d;
+  color: #111827;
 }
 
 .get-started-btn {
-  background: #6b5b95;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
   color: white;
   border: none;
   padding: 12px 24px;
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
 }
 
 .get-started-btn:hover {
-  background: #5a4a85;
+  filter: brightness(0.95);
 }
 
 .search-container {
@@ -107,17 +113,18 @@
 }
 
 .search-input {
-  background: #f5f5f5;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  width: 200px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  width: 240px;
   font-size: 14px;
 }
 
 .search-input:focus {
   outline: none;
-  background: #ebebeb;
+  background: #eef2ff;
+  border-color: #93c5fd;
 }
 
 .notification-btn {
@@ -146,15 +153,15 @@
   .header-container {
     padding: 0 16px;
   }
-  
+
   .header-nav {
     display: none;
   }
-  
+
   .search-input {
     width: 150px;
   }
-  
+
   .nav-link {
     display: none;
   }

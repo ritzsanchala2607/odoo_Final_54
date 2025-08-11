@@ -4,13 +4,11 @@ import axios from 'axios'; // ← make sure this is imported
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import './LoginPage.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -81,7 +79,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 className="forgot-password-link"
-                onClick={() => setShowForgotPassword(true)}
+                onClick={() => navigate('/verify-otp')}
               >
                 Forgot password?
               </button>
@@ -96,11 +94,6 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
-
-      <ForgotPasswordModal
-        isOpen={showForgotPassword}
-        onClose={() => setShowForgotPassword(false)}
-      />
     </div>
   );
 };
