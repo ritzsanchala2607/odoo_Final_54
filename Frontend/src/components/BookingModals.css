@@ -1,121 +1,88 @@
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(17, 24, 39, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+.booking-modal {
+    width: 88% !important;
+    max-width: 840px !important;
+    max-height: 88vh;
 }
 
-.modal-content {
-    background: #ffffff;
-    width: 100%;
-    max-width: 640px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-    animation: modalIn 0.2s ease;
-}
-
+/* Header accent */
 .modal-header {
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #6B5B95, #8A78BD);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    border-bottom: 1px solid #ececf1;
 }
 
-.modal-title {
-    font-size: 18px;
+.modal-header h2 {
     font-weight: 800;
-    margin: 0;
+    color: #1f2937;
 }
 
-.modal-close {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    font-size: 22px;
-    cursor: pointer;
-}
-
-.modal-body {
-    padding: 18px 20px;
-}
-
-.modal-footer {
-    padding: 16px 20px;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    border-top: 1px solid #f1f3f5;
-}
-
-.details-grid {
+/* Grid layout for fields */
+.fields-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
 }
 
-.detail-label {
-    color: #374151;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.detail-value {
-    color: #6b7280;
-    font-size: 14px;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px 16px;
-}
-
-.form-row {
-    display: contents;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-group label {
+/* Form elements */
+.booking-form .form-group label {
+    display: block;
     font-size: 12px;
     font-weight: 700;
     color: #374151;
+    margin-bottom: 4px;
 }
 
-.form-group input,
-.form-group select {
-    padding: 10px 12px;
+.form-input,
+.booking-form input,
+.booking-form select {
+    width: 100%;
+    background: #ffffff;
     border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #111827;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking-form input:focus,
+.booking-form select:focus {
+    outline: none;
+    border-color: #6B5B95;
+    box-shadow: 0 0 0 3px rgba(107, 91, 149, 0.15);
+}
+
+/* Details list */
+.details-grid .form-group {
+    padding: 10px;
+    border: 1px solid #f1f3f5;
     border-radius: 10px;
+    background: #fafaff;
+}
+
+.details-grid .form-group strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.details-grid .form-group span {
     font-size: 14px;
+    color: #111827;
 }
 
-@media (max-width: 640px) {
+/* Actions */
+.modal-body .button-primary {
+    background: #6B5B95;
+}
 
-    .details-grid,
-    .form-grid {
+.modal-body .button-primary:hover {
+    background: #5a4a85;
+}
+
+/* Responsive */
+@media (max-width: 820px) {
+    .fields-grid {
         grid-template-columns: 1fr;
-    }
-}
-
-@keyframes modalIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
     }
 }

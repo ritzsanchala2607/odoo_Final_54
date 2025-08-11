@@ -77,15 +77,15 @@
 .booking-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 18px;
+  padding: 16px;
   border: 1px solid #ececf1;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(107, 91, 149, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .booking-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 16px 36px rgba(107, 91, 149, 0.16);
 }
 
 .booking-header {
@@ -105,8 +105,8 @@
 }
 
 .venue-thumbnail {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border-radius: 12px;
   object-fit: cover;
 }
@@ -125,10 +125,11 @@
   background: #f3f0ff;
   color: #6B5B95;
   border: 1px solid #e9e5ff;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 9999px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 12px;
+  letter-spacing: 0.3px;
 }
 
 .sport-icon {
@@ -137,8 +138,8 @@
 
 .venue-info h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 900;
   color: #111827;
 }
 
@@ -172,8 +173,8 @@
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px dashed #f1f3f5;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eeeef7;
 }
 
 .detail-row:last-child {
@@ -222,21 +223,6 @@
   border-radius: 12px;
   border: 1px dashed #e5e7eb;
   color: #6b7280;
-}
-
-.actions-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  color: #6B5B95;
 }
 
 /* Responsive */
