@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios'; // ← make sure this is imported
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -11,6 +11,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -51,6 +52,14 @@ const LoginPage = () => {
         // Authentication error
         setError(err.response?.data?.message || 'Login failed. Please try again.');
       }
+    setError('');
+    
+    const result = await login(email, password);
+    
+    if (result.success) {
+      navigate('/home');
+    } else {
+      setError(result.error);
     }
   };
 

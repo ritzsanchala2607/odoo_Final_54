@@ -30,7 +30,6 @@ async function cancel(req, res) {
   }
 }
 
-module.exports = { create, myBookings, cancel };
 async function join(req, res) {
   try {
     const record = await bookingService.joinBooking(req.params.id, req.user.id);
