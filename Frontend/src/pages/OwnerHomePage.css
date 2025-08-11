@@ -1037,6 +1037,148 @@
   color: #475569;
 }
 
+/* Venue Section */
+.venues-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.venues-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.new-venue-btn {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.new-venue-btn:hover {
+  background-color: #1e40af;
+}
+
+.courts-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.court-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #e5e7eb;
+}
+
+.court-info h4 {
+  margin: 0;
+}
+
+.court-status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+.court-status.open { background: #d1fae5; color: #065f46; }
+.court-status.closed { background: #fee2e2; color: #991b1b; }
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 5%;
+  z-index: 50;
+}
+
+.modal {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 95%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+}
+
+.modal-form label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-top: 0.8rem;
+}
+
+.modal-form input,
+.modal-form select,
+.modal-form textarea {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  margin-top: 0.3rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
+.checkbox-group {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0;
+}
+
+.checkbox-group label {
+  font-size: 0.85rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 .court-status {
   padding: 4px 10px;
   border-radius: 14px;

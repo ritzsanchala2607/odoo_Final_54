@@ -24,7 +24,7 @@ const scheduleRouter = require('./routes/schedule.routes');
 const slotRouter = require('./routes/slot.routes');
 
 const app = express();
-
+app.use(express.json());
 app.use(cors({
     origin: 'http://localhost:5173', // your frontend's URL
     credentials: true
@@ -49,10 +49,12 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET, // Replace with your test key_secret
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Increase body size limits to allow base64 images in JSON
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+
 app.use('/avatar', express.static(path.join(__dirname, 'public/avatar')));
 
 // API routes
