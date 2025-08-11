@@ -3,14 +3,25 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Header.css';
+import coin1 from '../assets/goldCoin/goldCoin1.png';
+import coin2 from '../assets/goldCoin/goldCoin2.png';
+import coin3 from '../assets/goldCoin/goldCoin3.png';
+import coin4 from '../assets/goldCoin/goldCoin4.png';
+import coin5 from '../assets/goldCoin/goldCoin5.png';
+import coin6 from '../assets/goldCoin/goldCoin6.png';
+import coin7 from '../assets/goldCoin/goldCoin7.png';
+import coin8 from '../assets/goldCoin/goldCoin8.png';
+import coin9 from '../assets/goldCoin/goldCoin9.png';
 
 const Header = ({ showNavigation = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const { isAuthenticated, logout } = useAuth();
- const [userRole, setUserRole] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [userPoints, setUserPoints] = useState(0);
+  const coinFrames = React.useMemo(() => [coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9], []);
+  const [coinFrameIdx, setCoinFrameIdx] = useState(0);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
     onScroll();
@@ -22,15 +33,23 @@ const Header = ({ showNavigation = false }) => {
     await logout();
     navigate('/login');
   };
+  
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const id = setInterval(() => {
+      setCoinFrameIdx((i) => (i + 1) % coinFrames.length);
+    }, 90);
+    return () => clearInterval(id);
+  }, [isAuthenticated, coinFrames]);
   useEffect(() => {
     setUserRole(localStorage.getItem('userRole'));
     setUserPoints(localStorage.getItem('userPoints') || 0);
   }, []);
   const navigationItems = [
-    { label: 'Home', path: '/home' },
-    { label: 'Venues', path: '/venues' },
-    { label: 'My Bookings', path: '/mybookings' },
-    { label: 'Profile', path: '/profile' }
+    { label: 'Home', path: '/home', requiresAuth: false },
+    { label: 'Venues', path: '/venues', requiresAuth: true },
+    { label: 'My Bookings', path: '/mybookings', requiresAuth: true },
+    { label: 'Profile', path: '/profile', requiresAuth: true }
   ];
 
   return (
@@ -46,7 +65,9 @@ const Header = ({ showNavigation = false }) => {
         {showNavigation && (
           <>
             <nav className="header-nav">
-              {navigationItems.map((item) => (
+              {navigationItems
+                .filter((item) => !item.requiresAuth || isAuthenticated)
+                .map((item) => (
                 <button
                   key={item.path}
                   className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
@@ -54,20 +75,19 @@ const Header = ({ showNavigation = false }) => {
                 >
                   {item.label}
                 </button>
-              ))}
+                ))}
             </nav>
             
             <div className="header-right">
             
-              {userRole === 'user' && (
+              {isAuthenticated && (
                 <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
-               
-                  <img 
-                  src="/assets/coin.png" 
-                  alt="Points" 
-                  className="coin-spin"
-                  style={{ width: '25px', height: '25px', marginRight: '5px' }} 
-                />
+                  <img
+                    src={coinFrames[coinFrameIdx]}
+                    alt="Points"
+                    className="coin-spin"
+                    style={{ width: '25px', height: '25px', marginRight: '5px' }}
+                  />
                   <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#FFD700' }}>
                     {userPoints}
                   </span>
@@ -103,9 +123,26 @@ const Header = ({ showNavigation = false }) => {
 
         {!showNavigation && (
           <div className="header-right">
-            <button className="nav-link" onClick={() => navigate('/venues')}>Venues</button>
-            <button className="nav-link" onClick={() => navigate('/mybookings')}>My Bookings</button>
-            <button className="nav-link" onClick={() => navigate('/profile')}>Profile</button>
+            {isAuthenticated && (
+              <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
+                <img
+                  src={coinFrames[coinFrameIdx]}
+                  alt="Points"
+                  className="coin-spin"
+                  style={{ width: '25px', height: '25px', marginRight: '5px' }}
+                />
+                <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#FFD700' }}>
+                  {userPoints}
+                </span>
+              </div>
+            )}
+            {isAuthenticated && (
+              <>
+                <button className="nav-link" onClick={() => navigate('/venues')}>Venues</button>
+                <button className="nav-link" onClick={() => navigate('/mybookings')}>My Bookings</button>
+                <button className="nav-link" onClick={() => navigate('/profile')}>Profile</button>
+              </>
+            )}
             {isAuthenticated ? (
               <button className="logout-btn" onClick={handleLogout}>
                 Logout
