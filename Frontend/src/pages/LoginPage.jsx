@@ -26,8 +26,11 @@ const LoginPage = () => {
       // If login succeeds
       // navigate('/home');
       if (response.data.user.role === 'owner') {
+         localStorage.setItem('userRole', 'owner');
         navigate('/owner-home'); // Owner-specific home page
       } else {
+          localStorage.setItem('userRole', 'user');
+            localStorage.setItem('userPoints', response.data.user.points || 500);
         navigate('/home'); // Normal user home page
       }
 
