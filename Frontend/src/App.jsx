@@ -50,7 +50,7 @@ function App() {
             </Route>
             
             {/* Catch-all route for any unmatched paths */}
-            <Route path="*" element={<Navigate to="/home" replace />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
 
           </Routes>
         </div>
