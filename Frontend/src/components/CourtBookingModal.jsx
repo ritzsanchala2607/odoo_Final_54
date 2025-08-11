@@ -1,15 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './CourtBookingModal.css';
+
+// Load Razorpay script helper
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) => {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [pricingMode, setPricingMode] = useState('per_hour');
   const [memberCount, setMemberCount] = useState(1);
   const [userBalance, setUserBalance] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [topupLoading, setTopupLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Get today's date in YYYY-MM-DD format
@@ -20,6 +33,14 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
       fetchUserBalance();
     }
   }, [isOpen, user]);
+
+  useEffect(() => {
+    // Default pricing mode based on court settings
+    if (court) {
+      if (court.allow_per_hour) setPricingMode('per_hour');
+      else if (court.allow_per_person) setPricingMode('per_person');
+    }
+  }, [court]);
 
   const fetchUserBalance = async () => {
     try {
@@ -39,9 +60,37 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
     }
   };
 
-  // Calculate pricing based on mode
+  const timeOptions = useMemo(() => {
+    const opts = [];
+    for (let hour = 7; hour <= 22; hour++) {
+      const hh = hour.toString().padStart(2, '0');
+      opts.push(`${hh}:00`);
+    }
+    return opts;
+  }, []);
+
+  const filteredEndOptions = useMemo(() => {
+    if (!startTime) return [];
+    const startHour = parseInt(startTime.split(':')[0], 10);
+    const opts = [];
+    for (let hour = startHour + 1; hour <= 23; hour++) {
+      const hh = hour.toString().padStart(2, '0');
+      opts.push(`${hh}:00`);
+    }
+    return opts;
+  }, [startTime]);
+
+  const durationHours = useMemo(() => {
+    if (!startTime || !endTime) return 0;
+    const startH = parseInt(startTime.split(':')[0], 10);
+    const endH = parseInt(endTime.split(':')[0], 10);
+    const diff = endH - startH;
+    return diff > 0 ? diff : 0;
+  }, [startTime, endTime]);
+
+  // Calculate pricing based on mode and duration
   const calculatePricing = () => {
-    if (!court) return { unitPrice: 0, totalAmount: 0 };
+    if (!court || durationHours === 0) return { unitPrice: 0, totalAmount: 0 };
 
     let unitPrice = 0;
     if (pricingMode === 'per_person') {
@@ -50,9 +99,9 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
       unitPrice = court.price_per_hour || 0;
     }
 
-    const totalAmount = pricingMode === 'per_person' 
-      ? unitPrice * memberCount 
-      : unitPrice;
+    const totalAmount = pricingMode === 'per_person'
+      ? (unitPrice * memberCount * durationHours)
+      : (unitPrice * durationHours);
 
     return { unitPrice, totalAmount };
   };
@@ -62,9 +111,78 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
   const hasEnoughCredits = userBalance >= creditsNeeded;
   const creditShortfall = hasEnoughCredits ? 0 : creditsNeeded - userBalance;
 
+  const handleBuyCredits = async () => {
+    try {
+      setError('');
+      if (creditShortfall <= 0) return;
+      setTopupLoading(true);
+
+      const token = localStorage.getItem('token');
+
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        setError('Razorpay SDK failed to load');
+        setTopupLoading(false);
+        return;
+      }
+
+      // Create credits order
+      const orderRes = await fetch('/api/payments/credits/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ amount: creditShortfall })
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
+
+      const options = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'QuickCourt Credits',
+        description: `Top-up ₹${creditShortfall}`,
+        order_id: orderData.orderId,
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch('/api/payments/credits/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: creditShortfall
+              })
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) throw new Error(verifyData.message || 'Verification failed');
+            // Refresh balance
+            await fetchUserBalance();
+          } catch (e) {
+            setError(e.message);
+          }
+        },
+        theme: { color: '#4B0082' },
+        modal: { ondismiss: () => setError('Payment cancelled') }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setTopupLoading(false);
+    }
+  };
+
   const handleBooking = async () => {
-    if (!selectedDate || !selectedTimeSlot) {
-      setError('Please select date and time slot');
+    if (!selectedDate || !startTime || !endTime) {
+      setError('Please select date, start and end time');
+      return;
+    }
+
+    if (durationHours <= 0) {
+      setError('End time must be after start time');
       return;
     }
 
@@ -87,8 +205,8 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
         body: JSON.stringify({
           court_id: court.id,
           venue_id: venue.id,
-          start_at: `${selectedDate}T${selectedTimeSlot.split('-')[0]}:00`,
-          end_at: `${selectedDate}T${selectedTimeSlot.split('-')[1]}:00`,
+          start_at: `${selectedDate}T${startTime}:00`,
+          end_at: `${selectedDate}T${endTime}:00`,
           pricing_mode: pricingMode,
           unit_price: unitPrice,
           total_amount: totalAmount,
@@ -119,23 +237,6 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
     }
   };
 
-  // Generate time slots (7 AM to 11 PM)
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 7; hour <= 22; hour++) {
-      const startTime = `${hour.toString().padStart(2, '0')}:00`;
-      const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
-      slots.push({
-        id: `${startTime}-${endTime}`,
-        time: `${hour}:00 - ${hour + 1}:00`,
-        hour: hour
-      });
-    }
-    return slots;
-  };
-
-  const timeSlots = generateTimeSlots();
-
   if (!isOpen) return null;
 
   return (
@@ -153,8 +254,10 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
               <h3>{court?.name}</h3>
               <p className="sport-type">{court?.sport_type}</p>
               <div className="court-pricing">
-                <span>Per Hour: ₹{court?.price_per_hour}</span>
-                {court?.price_per_person && (
+                {court?.allow_per_hour && (
+                  <span>Per Hour: ₹{court?.price_per_hour}</span>
+                )}
+                {court?.allow_per_person && court?.price_per_person && (
                   <span>Per Person: ₹{court?.price_per_person}</span>
                 )}
               </div>
@@ -169,8 +272,8 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
               {!hasEnoughCredits && (
                 <div className="insufficient-balance">
                   <p>Insufficient credits. You need ₹{creditShortfall} more.</p>
-                  <button className="buy-credits-btn" onClick={() => window.location.href = '/shop'}>
-                    Buy Credits
+                  <button className="buy-credits-btn" onClick={handleBuyCredits} disabled={topupLoading}>
+                    {topupLoading ? 'Processing...' : `Buy Credits (₹${creditShortfall})`}
                   </button>
                 </div>
               )}
@@ -193,17 +296,19 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
           <section className="booking-section">
             <h3>Pricing Mode</h3>
             <div className="pricing-mode-selector">
-              <label className={`pricing-option ${pricingMode === 'per_hour' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="pricingMode"
-                  value="per_hour"
-                  checked={pricingMode === 'per_hour'}
-                  onChange={(e) => setPricingMode(e.target.value)}
-                />
-                <span>Per Hour (₹{court?.price_per_hour})</span>
-              </label>
-              {court?.price_per_person && (
+              {court?.allow_per_hour && (
+                <label className={`pricing-option ${pricingMode === 'per_hour' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="pricingMode"
+                    value="per_hour"
+                    checked={pricingMode === 'per_hour'}
+                    onChange={(e) => setPricingMode(e.target.value)}
+                  />
+                  <span>Per Hour (₹{court?.price_per_hour})</span>
+                </label>
+              )}
+              {court?.allow_per_person && court?.price_per_person && (
                 <label className={`pricing-option ${pricingMode === 'per_person' ? 'selected' : ''}`}>
                   <input
                     type="radio"
@@ -218,19 +323,31 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
             </div>
           </section>
 
-          {/* Time Slot Selection */}
+          {/* Time Selection */}
           <section className="booking-section">
-            <h3>Select Time Slot</h3>
-            <div className="time-slots-grid">
-              {timeSlots.map(slot => (
-                <div
-                  key={slot.id}
-                  className={`time-slot ${selectedTimeSlot === slot.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedTimeSlot(slot.id)}
-                >
-                  <div className="slot-time">{slot.time}</div>
-                </div>
-              ))}
+            <h3>Select Time</h3>
+            <div className="time-selectors">
+              <div>
+                <label>Start</label>
+                <select value={startTime} onChange={(e) => { setStartTime(e.target.value); setEndTime(''); }}>
+                  <option value="">--</option>
+                  {timeOptions.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label>End</label>
+                <select value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={!startTime}>
+                  <option value="">--</option>
+                  {filteredEndOptions.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ alignSelf: 'flex-end', fontSize: 12, color: '#555' }}>
+                {durationHours > 0 ? `${durationHours} hour(s)` : 'Select start and end'}
+              </div>
             </div>
           </section>
 
@@ -259,7 +376,7 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
           )}
 
           {/* Booking Summary */}
-          {selectedTimeSlot && (
+          {startTime && endTime && (
             <section className="booking-section booking-summary">
               <h3>Booking Summary</h3>
               <div className="summary-item">
@@ -272,7 +389,7 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
               </div>
               <div className="summary-item">
                 <span>Time:</span>
-                <span>{selectedTimeSlot}</span>
+                <span>{startTime} - {endTime} ({durationHours}h)</span>
               </div>
               <div className="summary-item">
                 <span>Pricing:</span>
@@ -309,7 +426,7 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
           <button
             className="book-now-btn"
             onClick={handleBooking}
-            disabled={!selectedDate || !selectedTimeSlot || !hasEnoughCredits || loading}
+            disabled={!selectedDate || !startTime || !endTime || durationHours <= 0 || !hasEnoughCredits || loading}
           >
             {loading ? 'Processing...' : `Book with Credits (₹${creditsNeeded})`}
           </button>
