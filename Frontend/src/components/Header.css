@@ -173,6 +173,7 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.2s ease;
+  animation: none !important; /* ensure avatar never spins */
 }
 
 .user-avatar img:hover {
