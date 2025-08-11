@@ -12,16 +12,8 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Initialize from localStorage if available
-    const storedAuth = localStorage.getItem('isAuthenticated');
-    return storedAuth ? JSON.parse(storedAuth) : false;
-  });
-  const [user, setUser] = useState(() => {
-    // Initialize user from localStorage if available
-    const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const STORAGE_KEY = 'auth_user';
 
@@ -46,27 +38,6 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/user/check-auth`, {
         withCredentials: true
       });
-      if (response.data.isAuthenticated) {
-        const userData = response.data.user;
-        setIsAuthenticated(true);
-        setUser(userData);
-        // Update localStorage with fresh data
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('userRole', userData.role);
-      } else {
-        // Clear if not authenticated
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('user');
-        localStorage.removeItem('userRole');
-      }
-    } catch (error) {
-      setIsAuthenticated(false);
-      setUser(null);
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userRole');
-
       if (response.data?.isAuthenticated && response.data?.user) {
         setIsAuthenticated(true);
         setUser(response.data.user);
@@ -95,15 +66,7 @@ export const AuthProvider = ({ children }) => {
       );
       
       if (response.data.user) {
-        const userData = response.data.user;
         setIsAuthenticated(true);
-
-        setUser(userData);
-        // Store in localStorage
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('userRole', userData.role);
-
         setUser(response.data.user);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
         return { success: true };
@@ -126,10 +89,6 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsAuthenticated(false);
       setUser(null);
-      // Clear localStorage on logout
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userRole');
       localStorage.removeItem(STORAGE_KEY);
     }
   };
