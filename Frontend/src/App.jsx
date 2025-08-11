@@ -26,6 +26,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import Dashboard from './pages/Dashboard';
 import './App.css';
+import BuyCredits from './pages/BuyCredits';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
               <Route path="/mybookings" element={<MyBookingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/venue/:id" element={<VenueDetails />} />
+              <Route path="/buy-credits" element={<BuyCredits />} />
             </Route>
             
             {/* Catch-all route for any unmatched paths */}
