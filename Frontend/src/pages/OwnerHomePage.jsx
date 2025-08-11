@@ -90,8 +90,12 @@ const submitVenueRequest = (e) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const handleLogout = async () => {
-    
-    console.log('Logout clicked');
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
   
   // Initial dummy venues
@@ -160,14 +164,6 @@ const handleCourtSubmit = (e) => {
   setShowCourtModal(false);
   setNewCourt({ courtName: "", sport: "", capacity: "", price: "" });
 };
-
-    try {
-      await logout();
-      navigate('/login');
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
-  };
 
   // Mock data
   const courtBookingData = [
