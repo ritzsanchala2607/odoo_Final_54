@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       // Server route may not exist; do not clear local state in this case
       console.log('Check auth failed, falling back to local state', error);
-    } finally 
+    } finally {
       setLoading(false);
     }
   };
