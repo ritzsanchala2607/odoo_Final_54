@@ -5,7 +5,8 @@ const { validation } = require('../helper/validation');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 router.get('/', venueController.list);
-router.post('/', requireAuth, requireRole('owner', 'admin'), validation.venueCreate, venueController.create);
+// router.post('/', requireAuth, requireRole('owner', 'admin'), validation.venueCreate, venueController.create);
+router.post('/',venueController.create);
 
 module.exports = router;
 
