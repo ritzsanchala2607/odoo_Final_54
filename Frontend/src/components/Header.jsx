@@ -9,9 +9,9 @@ const Header = ({ showNavigation = false }) => {
 
   const navigationItems = [
     { label: 'Home', path: '/home' },
-    { label: 'Venues', path: '/Venues' },
-    { label: 'My Bookings', path: '/MyBookings' },
-    { label: 'Profile', path: '/Profile' }
+    { label: 'Venues', path: '/venues' },
+    { label: 'My Bookings', path: '/mybookings' },
+    { label: 'Profile', path: '/profile' }
   ];
 
   return (
@@ -19,8 +19,8 @@ const Header = ({ showNavigation = false }) => {
       <div className="header-container">
         <div className="header-left">
           <div className="logo" onClick={() => navigate('/home')}>
-            <span className="logo-icon">◆</span>
-            <span className="logo-text">QuickCourt</span>
+            <span className="logo-icon">🏢</span>
+            <span className="logo-text">VenueBook</span>
           </div>
         </div>
 
@@ -42,7 +42,7 @@ const Header = ({ showNavigation = false }) => {
               <div className="search-container">
                 <input
                   type="text"
-                  placeholder="Search"
+                  placeholder="Search venues..."
                   className="search-input"
                 />
               </div>
@@ -56,9 +56,9 @@ const Header = ({ showNavigation = false }) => {
 
         {!showNavigation && (
           <div className="header-right">
-            <button className="nav-link">Browse</button>
-            <button className="nav-link">My Skills</button>
-            <button className="nav-link">Messages</button>
+            <button className="nav-link" onClick={() => navigate('/venues')}>Browse Venues</button>
+            <button className="nav-link" onClick={() => navigate('/mybookings')}>My Bookings</button>
+            <button className="nav-link" onClick={() => navigate('/profile')}>Profile</button>
             <button className="get-started-btn" onClick={() => navigate('/home')}>
               Get Started
             </button>
