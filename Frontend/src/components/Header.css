@@ -189,6 +189,14 @@
   font-size: 16px;
   color: #9ca3af;
 }
+@keyframes spinCoin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.coin-spin {
+  animation: spinCoin 2s linear infinite;
+}
 
 @media (max-width: 768px) {
   .header-container {
