@@ -51,6 +51,7 @@ const LoginPage = () => {
         setError(err.response?.data?.message || 'Login failed. Please try again.');
       }
     }
+
   };
 
   return (
@@ -105,5 +106,4 @@ const LoginPage = () => {
     </div>
   );
 };
-
 export default LoginPage;
