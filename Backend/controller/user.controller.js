@@ -59,7 +59,7 @@ async function login(req, res) {
   }
   
   try {
-    const result = await userService.login(req.body);
+    const result = await userService.login(req.body, req, res);
     return res.json(result);
   } catch (err) {
     return res.status(400).json({ message: err.message });
@@ -76,5 +76,41 @@ async function verifyOtp(req, res) {
   }
 }
 
-module.exports = { signup, login, verifyOtp, uploadAvatar, upload };
+async function logout(req, res) {
+  try {
+    const result = await userService.logout(req, res);
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function checkAuth(req, res) {
+  try {
+    const result = await userService.checkAuth(req);
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function refreshToken(req, res) {
+  try {
+    const result = await userService.refreshToken(req, res);
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function getCurrentUser(req, res) {
+  try {
+    const user = await userService.getCurrentUser(req);
+    return res.json({ user });
+  } catch (err) {
+    return res.status(401).json({ message: err.message });
+  }
+}
+
+module.exports = { signup, login, verifyOtp, logout, checkAuth, refreshToken, getCurrentUser, uploadAvatar, upload };
 
