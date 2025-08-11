@@ -28,8 +28,11 @@ const LoginPage = () => {
       
       // If login succeeds, navigate based on role
       if (response.data.user.role === 'owner') {
+         localStorage.setItem('userRole', 'owner');
         navigate('/owner-home'); // Owner-specific home page
       } else {
+          localStorage.setItem('userRole', 'user');
+            localStorage.setItem('userPoints', response.data.user.points || 500);
         navigate('/home'); // Normal user home page
       }
 
@@ -51,7 +54,7 @@ const LoginPage = () => {
         setError(err.response?.data?.message || 'Login failed. Please try again.');
       }
     }
-  };
+  };}
 
   return (
     <div className="login-page">

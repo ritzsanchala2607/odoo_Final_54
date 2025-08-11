@@ -9,7 +9,8 @@ const Header = ({ showNavigation = false }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const { isAuthenticated, logout, user, refreshUserData } = useAuth();
-
+ const [userRole, setUserRole] = useState(null);
+  const [userPoints, setUserPoints] = useState(0);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
     onScroll();
@@ -29,6 +30,7 @@ const Header = ({ showNavigation = false }) => {
     navigate('/login');
   };
 
+
   const getAvatarUrl = () => {
     if (user && user.avatar_url) {
       // If avatar_url starts with '/', it's a relative path, otherwise it's a full URL
@@ -46,6 +48,11 @@ const Header = ({ showNavigation = false }) => {
     e.target.src = '../assets/user_img.png';
   };
 
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem('userRole'));
+    setUserPoints(localStorage.getItem('userPoints') || 0);
+  }, []);
   const navigationItems = [
     { label: 'Home', path: '/home' },
     { label: 'Venues', path: '/venues' },
@@ -76,8 +83,23 @@ const Header = ({ showNavigation = false }) => {
                 </button>
               ))}
             </nav>
-
+            
             <div className="header-right">
+            
+              {userRole === 'user' && (
+                <div style={{ display: 'flex', alignItems: 'center', marginRight: '15px' }}>
+               
+                  <img 
+                  src="/assets/coin.png" 
+                  alt="Points" 
+                  className="coin-spin"
+                  style={{ width: '25px', height: '25px', marginRight: '5px' }} 
+                />
+                  <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#FFD700' }}>
+                    {userPoints}
+                  </span>
+                </div>
+              )}
               <div className="search-container">
                 <input
                   type="text"
