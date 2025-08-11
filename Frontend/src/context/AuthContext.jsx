@@ -48,9 +48,11 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
       }
-    } catch (error) {
-      // Server route may not exist; do not clear local state in this case
-    } finally {
+    }
+    //  catch (error) {
+    //   // Server route may not exist; do not clear local state in this case
+    // }
+     finally {
       setLoading(false);
     }
   };
