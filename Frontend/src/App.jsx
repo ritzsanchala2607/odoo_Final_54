@@ -4,11 +4,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
+import VenuesPage from './pages/VenuesPage';
+import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
-import EditProfilePage from './pages/EditProfilePage';
-import ExplorePage from './pages/ExplorePage';
-import SwapFormPage from './pages/SwapFormPage';
-import RequestsPage from './pages/RequestsPage';
 import './App.css';
 
 function App() {
@@ -20,11 +18,9 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/venues" element={<VenuesPage />} />
+          <Route path="/mybookings" element={<MyBookingsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/edit-profile" element={<EditProfilePage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/swap-form" element={<SwapFormPage />} />
-          <Route path="/requests" element={<RequestsPage />} />
           {/* Catch-all route for any unmatched paths */}
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

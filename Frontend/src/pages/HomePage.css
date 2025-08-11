@@ -1,52 +1,188 @@
 
 .home-page {
   min-height: 100vh;
-  background-color: #fafafa;
+  background-color: #f8f9fa;
 }
 
 .home-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 80px);
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
 }
 
 .welcome-section {
   text-align: center;
-  max-width: 600px;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  margin-bottom: 60px;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
 }
 
 .welcome-section h1 {
-  font-size: 48px;
-  font-weight: 600;
-  color: #2d2d2d;
-  margin-bottom: 16px;
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  text-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .welcome-section p {
-  font-size: 18px;
-  color: #666;
+  font-size: 1.3rem;
   margin-bottom: 40px;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .action-buttons {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
+.features-section {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.features-section h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 50px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.feature-card {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.feature-card p {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cta-section {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(40, 167, 69, 0.3);
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cta-section p {
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
+  .home-container {
+    padding: 15px;
+  }
+  
+  .welcome-section {
+    padding: 60px 20px;
+    margin-bottom: 40px;
+  }
+  
   .welcome-section h1 {
-    font-size: 36px;
+    font-size: 2.5rem;
   }
   
   .welcome-section p {
-    font-size: 16px;
+    font-size: 1.1rem;
   }
   
   .action-buttons {
     flex-direction: column;
     align-items: center;
+  }
+  
+  .features-section h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .feature-card {
+    padding: 30px 20px;
+  }
+  
+  .cta-section {
+    padding: 40px 20px;
+  }
+  
+  .cta-section h2 {
+    font-size: 2rem;
+  }
+  
+  .cta-section p {
+    font-size: 1.1rem;
+  }
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
