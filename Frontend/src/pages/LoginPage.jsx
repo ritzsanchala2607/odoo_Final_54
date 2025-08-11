@@ -54,7 +54,7 @@ const LoginPage = () => {
         setError(err.response?.data?.message || 'Login failed. Please try again.');
       }
     }
-  };}
+  };
 
   return (
     <div className="login-page">
