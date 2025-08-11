@@ -23,24 +23,46 @@ const ProfilePage = () => {
   const [editData, setEditData] = useState({ ...profileData });
   const [bookings, setBookings] = useState([]);
 
-  // Fetch user profile data when component mounts
+  // Fetch and normalize user profile data
   useEffect(() => {
-    if (user) {
-      const userProfile = {
-        fullName: user.full_name || 'User',
-        email: user.email || '',
-        phone: user.phone || '',
-        company: user.company || '',
-        position: user.position || '',
-        location: user.location || '',
-        bio: user.short_bio || '',
-        avatar: getAvatarUrl(user.avatar_url)
-      };
-      setProfileData(userProfile);
-      setEditData(userProfile);
-      setIsLoading(false);
-    }
-  }, [user]);
+    let isActive = true;
+    const load = async () => {
+      try {
+        let effectiveUser = user;
+        // Try server refresh first (if implemented); fall back to context/local
+        if (!effectiveUser && typeof refreshUserData === 'function') {
+          effectiveUser = await refreshUserData();
+        }
+        if (!effectiveUser) {
+          const saved = localStorage.getItem('auth_user');
+          if (saved) {
+            try { effectiveUser = JSON.parse(saved); } catch (_) {}
+          }
+        }
+        if (!effectiveUser) {
+          setIsLoading(false);
+          return;
+        }
+        if (!isActive) return;
+        const userProfile = {
+          fullName: effectiveUser.full_name || effectiveUser.fullName || effectiveUser.name || 'User',
+          email: effectiveUser.email || '',
+          phone: effectiveUser.phone || '',
+          company: effectiveUser.company || '',
+          position: effectiveUser.position || '',
+          location: effectiveUser.location || '',
+          bio: effectiveUser.short_bio || effectiveUser.bio || '',
+          avatar: getAvatarUrl(effectiveUser.avatar_url)
+        };
+        setProfileData(userProfile);
+        setEditData(userProfile);
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
+    load();
+    return () => { isActive = false; };
+  }, [user, refreshUserData]);
 
   // Mock API Call for Bookings
   useEffect(() => {
@@ -66,12 +88,12 @@ const ProfilePage = () => {
       return avatarUrl;
     }
     // Fallback to default avatar
-    return '../assets/user_img.png';
+    return '../assets/user_profile.jpg';
   };
 
   const handleAvatarError = (e) => {
     // If user's avatar fails to load, fallback to default
-    e.target.src = '../assets/user_img.png';
+    e.target.src = '../assets/user_profile.jpg';
   };
 
   // Show loading state if user data is not yet available

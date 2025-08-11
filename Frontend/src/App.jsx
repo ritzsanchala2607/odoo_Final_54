@@ -11,6 +11,9 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
 import VenueDetails from './pages/VenueDetails';
 import ProtectedRoute from './components/ProtectedRoute';
+
+import OwnerHomePage  from './pages/OwnerHomePage';
+import Dashboard from './pages/Dashboard';
 import './App.css';
 
 function App() {
@@ -36,6 +39,15 @@ function App() {
             </Route>
             
             {/* Catch-all route */}
+
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/venues" element={<VenuesPage />} />
+            <Route path="/mybookings" element={<MyBookingsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/venue/:id" element={<VenueDetails />} />
+            <Route path="/admin" element={<Dashboard />} />
+            {/* Catch-all route for any unmatched paths */}
+
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </div>
