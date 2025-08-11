@@ -8,29 +8,34 @@ const Select = ({
   value,
   onChange,
   className = '',
-  ...props
+  error = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOptionClick = (option) => {
-    onChange(option);
+    onChange(option.value);
     setIsOpen(false);
   };
 
   const selectClass = `
     select-container 
     ${isOpen ? 'select-open' : ''}
+    ${error ? 'select-error' : ''}
     ${className}
   `.trim();
 
+  // Find the selected option label
+  const selectedOption = options.find(opt => (typeof opt === 'object' ? opt.value : opt) === value);
+  const displayLabel = selectedOption ? (selectedOption.label || selectedOption.value || selectedOption) : placeholder;
+
   return (
-    <div className={selectClass} {...props}>
+    <div className={selectClass}>
       <div
         className="select-trigger"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span className={`select-value ${!value ? 'select-placeholder' : ''}`}>
-          {typeof value === 'string' ? value : placeholder}
+          {displayLabel}
         </span>
         <span className={`select-arrow ${isOpen ? 'select-arrow-up' : ''}`}>
           ▼
@@ -40,14 +45,15 @@ const Select = ({
       {isOpen && (
         <div className="select-dropdown">
           {options.map((option, index) => {
-            const optionText = typeof option === 'string' ? option : String(option);
+            const optionValue = typeof option === 'object' ? option.value : option;
+            const optionLabel = typeof option === 'object' ? option.label : option;
             return (
               <div
                 key={index}
-                className={`select-option ${value === option ? 'select-option-selected' : ''}`}
+                className={`select-option ${value === optionValue ? 'select-option-selected' : ''}`}
                 onClick={() => handleOptionClick(option)}
               >
-                {optionText}
+                {optionLabel}
               </div>
             );
           })}

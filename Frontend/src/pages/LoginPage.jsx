@@ -18,7 +18,7 @@ const LoginPage = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
         { email, password },
-        { withCredentials: true } // <-- VERY IMPORTANT
+        { withCredentials: true }
       );
 
       console.log(response.data); // Optional: for debugging

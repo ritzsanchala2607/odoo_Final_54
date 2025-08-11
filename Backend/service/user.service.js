@@ -1,36 +1,45 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../helper/db.helper');
+const { sendMail } = require('../helper/send_mail');
 
-async function signup({ email, password, full_name, role, avatar_url }) {
-        const existingUser = await User.findOne({
-            where: { email: userData.email.toLowerCase() }
-        });
+async function signup({ email, password, full_name, role, avatar_url , phone , short_bio }) {
+    const existingUser = await User.findOne({
+        where: { email: email.toLowerCase() }
+    });
 
-        if (existingUser) {
-            throw new Error("Email Already Exists");
-        }
+    if (existingUser) {
+        // Instead of throwing, return a response object
+        return "Email Already Exists";
+    }
 
-        const hash = await bcrypt.hash(password, 10);
-        const otp = Math.floor(100000 + Math.random() * 900000);
+    const hash = await bcrypt.hash(password, 10);
+    const otp = Math.floor(100000 + Math.random() * 900000);
 
-        const user = await User.create({
-          full_name: full_name,
-          email: email.toLowerCase(),
-          password_hash: hash,
-          avatar_url: avatar_url,
-          otp: otp , 
-          role: role,
-          is_active: true,
-          otp_verified: false,
-        });
+    const user = await User.create({
+      full_name: full_name,
+      email: email.toLowerCase(),
+      password_hash: hash,
+      avatar_url: avatar_url,
+      otp: otp , 
+      role: role,
+      is_active: true,
+      otp_verified: false,
+      phone: phone,
+      short_bio: short_bio,
+    });
 
-        let mailSubject = "Verification Email From Griwa Internationals";
-        let content = '<p> Hello ' + userData.name + ', \
-        Please<a href="http://127.0.0.1:3000/mail_verification?token='+ randomToken + '">Verify</a> Your Email Address.</p>';
-        await sendMail(userData.email, mailSubject, content);
+    //Commented out email sending logic for now to avoid reference errors
+    let mailSubject = "Verification Email From Griwa Internationals";
+    let content = '<p> Hello ' + full_name + ', Please verify your email address.</p>';
+    console.log(email, mailSubject, content);
+    await sendMail({
+      to: email,
+      subject: mailSubject,
+      html: content
+    });
 
-        return user;
+    return user;
 }
 
 async function login({ email, password }) {

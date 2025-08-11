@@ -1,20 +1,63 @@
 const { validationResult } = require('express-validator');
 const userService = require('../service/user.service');
+const multer = require('multer');
+const path = require('path');
+
+// Multer config for avatar uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '../public/avatar/'));
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed!'));
+    }
+    cb(null, true);
+  }
+});
+
+// Avatar upload handler
+async function uploadAvatar(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  const avatarUrl = `/avatar/${req.file.filename}`;
+  return res.json({ avatar_url: avatarUrl });
+}
 
 async function signup(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
   try {
     const user = await userService.signup(req.body);
+
+    if(user === "Email Already Exists"){
+      return res.status(400).json({ message: "Email Already Exists" });
+    }
     return res.status(201).json({ user });
   } catch (err) {
+    console.log(err);
     return res.status(400).json({ message: err.message });
   }
 }
 
 async function login(req, res) {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
   try {
     const result = await userService.login(req.body);
     return res.json(result);
@@ -33,5 +76,5 @@ async function verifyOtp(req, res) {
   }
 }
 
-module.exports = { signup, login, verifyOtp };
+module.exports = { signup, login, verifyOtp, uploadAvatar, upload };
 

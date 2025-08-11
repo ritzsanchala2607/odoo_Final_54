@@ -10,12 +10,15 @@ module.exports = (sequelize, DataTypes) => {
     full_name: DataTypes.TEXT,
     phone: DataTypes.TEXT,
     short_bio: DataTypes.TEXT,
+    credit_balance: { type: DataTypes.INTEGER, defaultValue: 0 },
     created_at: DataTypes.DATE,
     updated_at: DataTypes.DATE,
     otp: DataTypes.TEXT,
   }, {
     tableName: 'users',
-    timestamps: false
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   });
 
   User.associate = (models) => {
