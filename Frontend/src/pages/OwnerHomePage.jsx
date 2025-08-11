@@ -786,6 +786,9 @@
 
 import React, { useState } from 'react';
 import './OwnerHomePage.css';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
@@ -796,23 +799,30 @@ import {
 } from 'lucide-react';
 
 const OwnerHomePage = () => {
+    const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [performanceFilter, setPerformanceFilter] = useState('all');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [selectedPrediction, setSelectedPrediction] = useState(null);
 
-  // Mock user data and auth functions (replace with your actual auth)
-  const user = {
-    name: 'John Smith',
-    email: 'john.smith@quickcourt.com',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
-  };
 
+  // Get the current user from AuthContext
+
+
+  // Fallback for missing user data
+  const displayName = user?.full_name || user?.name || user?.email || 'Owner';
+  const displayEmail = user?.email || '';
+  const displayAvatar = user?.avatar_url || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face';
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const handleLogout = async () => {
-    // Your logout logic here
-    // await logout();
-    // navigate('/login');
-    console.log('Logout clicked');
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
 
   // Mock data
@@ -1334,10 +1344,10 @@ const OwnerHomePage = () => {
             </div>
             <div className="user-profile">
               <div className="profile-info">
-                <img src={user.avatar} alt={user.name} className="profile-avatar" />
+                <img src={displayAvatar} alt={displayName} className="profile-avatar" />
                 <div className="profile-details">
-                  <div className="profile-name">{user.name}</div>
-                  <div className="profile-email">{user.email}</div>
+                  <div className="profile-name">{displayName}</div>
+                  {/* <div className="profile-email">{displayEmail}</div> */}
                 </div>
               </div>
               <button onClick={handleLogout} className="logout-button">
