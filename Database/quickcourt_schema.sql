@@ -17,6 +17,7 @@ CREATE TABLE users (
   full_name      text,
   phone          text,
   short_bio      text,
+  credit_balance int NOT NULL DEFAULT 0,
   created_at     timestamptz DEFAULT now(),
   updated_at     timestamptz DEFAULT now()
 );
@@ -37,6 +38,7 @@ CREATE TABLE venues (
   status        text NOT NULL DEFAULT 'pending',
   approved_by   uuid REFERENCES users(id),
   approved_at   timestamptz,
+  refund_ratio_default numeric(5,2) DEFAULT 0.50 CHECK (refund_ratio_default >= 0 AND refund_ratio_default <= 1),
   created_at    timestamptz DEFAULT now(),
   updated_at    timestamptz DEFAULT now()
 );
@@ -70,6 +72,10 @@ CREATE TABLE courts (
   name        text NOT NULL,
   sport_type  text NOT NULL,
   price_per_hour numeric(10,2) NOT NULL,
+  price_per_person numeric(10,2),
+  allow_per_hour boolean DEFAULT true,
+  allow_per_person boolean DEFAULT false,
+  refund_ratio_override numeric(5,2) CHECK (refund_ratio_override >= 0 AND refund_ratio_override <= 1),
   capacity     int DEFAULT 1,
   created_at   timestamptz DEFAULT now(),
   updated_at   timestamptz DEFAULT now(),
@@ -123,13 +129,24 @@ CREATE TABLE bookings (
   end_at       timestamptz NOT NULL,
   time_range   tstzrange GENERATED ALWAYS AS (tstzrange(start_at, end_at, '[]')) STORED,
   status       text NOT NULL DEFAULT 'confirmed',
+  pricing_mode text NOT NULL DEFAULT 'per_hour' CHECK (pricing_mode IN ('per_hour','per_person')),
+  unit_price   numeric(10,2) NOT NULL DEFAULT 0,
+  effective_refund_ratio numeric(5,2) CHECK (effective_refund_ratio >= 0 AND effective_refund_ratio <= 1),
   total_amount numeric(10,2) NOT NULL,
   payment_id   uuid REFERENCES payments(id),
+  -- community fields
+  visibility   text NOT NULL DEFAULT 'private' CHECK (visibility IN ('private','public','invite_only')),
+  player_capacity smallint,
+  allow_auto_join boolean DEFAULT true,
+  join_code     text UNIQUE,
+  host_notes    text,
   created_at   timestamptz DEFAULT now(),
   updated_at   timestamptz DEFAULT now(),
   cancelled_at timestamptz,
   cancel_reason text
 );
+
+CREATE INDEX IF NOT EXISTS idx_bookings_visibility ON bookings(visibility);
 
 -- Payments
 CREATE TABLE payments (
@@ -137,11 +154,26 @@ CREATE TABLE payments (
   booking_id   uuid UNIQUE REFERENCES bookings(id),
   method       text,
   amount       numeric(10,2),
+  amount_cash  numeric(10,2) DEFAULT 0,
+  credits_used int DEFAULT 0,
   currency     text DEFAULT 'INR',
   status       text,
   provider_txn_id text,
   created_at   timestamptz DEFAULT now()
 );
+
+-- Credit transactions ledger
+CREATE TABLE credit_transactions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  booking_id uuid REFERENCES bookings(id) ON DELETE SET NULL,
+  amount int NOT NULL, -- positive earn, negative spend
+  type text NOT NULL CHECK (type IN ('earn','spend','refund','adjust')),
+  reason text,
+  created_at timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_credit_tx_user ON credit_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_tx_booking ON credit_transactions(booking_id);
 
 -- Reviews
 CREATE TABLE reviews (
@@ -186,3 +218,17 @@ CREATE TABLE notifications (
   is_read boolean DEFAULT false,
   created_at timestamptz DEFAULT now()
 );
+
+-- Booking participants (host + players)
+CREATE TABLE booking_participants (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id uuid NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role text NOT NULL DEFAULT 'player' CHECK (role IN ('host','player')),
+  status text NOT NULL DEFAULT 'joined' CHECK (status IN ('joined','requested','invited','rejected','cancelled')),
+  joined_at timestamptz DEFAULT now(),
+  UNIQUE (booking_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_booking_participants_booking ON booking_participants(booking_id);
+CREATE INDEX IF NOT EXISTS idx_booking_participants_user ON booking_participants(user_id);

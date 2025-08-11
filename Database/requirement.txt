@@ -1,0 +1,159 @@
+1. Core Requirements
+General
+Authentication
+
+Signup (email, password, full name, avatar, role)
+
+Login
+
+OTP verification post-signup
+
+Role selection: User, Facility Owner, Admin
+
+Search & Filters
+
+By sport type, venue type, price, rating
+
+Pagination
+
+Ratings & Reviews (optional but recommended)
+
+Responsive UI
+
+User Role
+Home Page
+
+Popular venues
+
+Popular sports
+
+Search bar
+
+Carousel / Welcome banner
+
+Venues Page
+
+Venue listing with:
+
+Venue name
+
+Sport types
+
+Price/hour
+
+Location (short)
+
+Rating
+
+Filters & Pagination
+
+Single Venue Page
+
+Venue details (name, description, address, amenities, gallery, sports offered)
+
+Reviews
+
+Book Now → Goes to Court Booking Page
+
+Court Booking
+
+Select court, date & time slot
+
+Show price & total
+
+Simulate payment
+
+Redirect to “My Bookings”
+
+My Bookings
+
+Booking history (Confirmed / Cancelled / Completed)
+
+Cancel future bookings
+
+Profile
+
+View & edit personal info
+
+Facility Owner Role
+Dashboard
+
+KPIs: Total bookings, active courts, earnings
+
+Charts: Booking trends, peak hours
+
+Facility Management
+
+Add/Edit facility details
+
+Add/Edit courts (sport type, price/hour, operating hours)
+
+Upload photos
+
+Set availability / block slots
+
+Booking Overview
+
+View upcoming/past bookings
+
+Profile
+
+Owner details editable
+
+Admin Role
+Dashboard
+
+KPIs: total users, facility owners, bookings, active courts
+
+Charts: Booking activity trends, user registration trends, facility approval trends, most active sports, earnings
+
+Facility Approval
+
+Approve/reject facility registrations
+
+User Management
+
+List/search users by role/status
+
+Ban/unban
+
+View booking history
+
+Reports & Moderation (optional)
+
+Handle flagged facilities/users
+
+Profile
+
+Update admin info
+
+2. Pages / Modules List
+Authentication
+
+Login Page
+
+Signup Page (role selection + OTP verification)
+
+User Role
+3. Home Page
+4. Venues List
+5. Single Venue Page
+6. Court Booking Page
+7. My Bookings
+8. User Profile
+
+Facility Owner Role
+9. Owner Dashboard
+10. Facility Management Page
+11. Court Management Page
+12. Time Slot Management
+13. Booking Overview
+14. Owner Profile
+
+Admin Role
+15. Admin Dashboard
+16. Facility Approval Page
+17. User Management Page
+18. Reports & Moderation Page
+19. Admin Profile
+
