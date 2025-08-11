@@ -13,17 +13,19 @@ const RegisterPage = () => {
 
   const [currentStep, setCurrentStep] = useState(1); // 1: Registration, 2: OTP Verification
   const [formData, setFormData] = useState({
-    username: '',
+    full_name: '',
     email: '',
     password: '',
     confirmPassword: '',
     role: '',
+    phone: '',
+    short_bio: '',
     avatar: null
   });
   const [errors, setErrors] = useState({});
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState(''); // Store generated OTP for verification
+  // const [generatedOtp, setGeneratedOtp] = useState(''); // Store generated OTP for verification
 
   const roleOptions = [
     { label: 'User', value: 'user' },
@@ -67,8 +69,8 @@ const RegisterPage = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.username.trim()) {
-      newErrors.username = 'Full name is required';
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = 'Full name is required';
     }
 
     if (!formData.email.trim()) {
@@ -93,6 +95,12 @@ const RegisterPage = () => {
       newErrors.role = 'Please select a role';
     }
 
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10,}$/.test(formData.phone.replace(/\D/g, ''))) {
+      newErrors.phone = 'Please enter a valid phone number (at least 10 digits)';
+    }
+
     if (!formData.avatar) {
       newErrors.avatar = 'Please upload an avatar';
     }
@@ -100,12 +108,12 @@ const RegisterPage = () => {
     return newErrors;
   };
 
-  const generateOTP = () => {
-    // Generate a 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(otp);
-    return otp;
-  };
+  // const generateOTP = () => {
+  //   // Generate a 6-digit OTP
+  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  //   setGeneratedOtp(otp);
+  //   return otp;
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -133,15 +141,17 @@ const RegisterPage = () => {
       try {
         // 2. Register user with avatar_url
         await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/user/register`, {
-          full_name: formData.username,
+          full_name: formData.full_name,
           email: formData.email,
           password: formData.password,
           role: formData.role,
+          phone: formData.phone,
+          short_bio: formData.short_bio,
           avatar_url: avatarUrl,
         });
         // 3. Generate OTP for demo-only fallback and move to verify page
-        const otp = generateOTP();
-        console.log('Generated OTP (demo fallback):', otp);
+        // const otp = generateOTP();
+        // console.log('Generated OTP (demo fallback):', otp);
         // Go to verify-otp page, pass email in query
         navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
       } catch (error) {
@@ -156,30 +166,30 @@ const RegisterPage = () => {
   const handleOTPVerification = (e) => {
     e.preventDefault();
 
-    if (!otp) {
-      setOtpError('Please enter the OTP');
-      return;
-    }
+    // if (!otp) {
+    //   setOtpError('Please enter the OTP');
+    //   return;
+    // }
 
-    if (otp === generatedOtp) {
-      // OTP verified successfully
-      console.log('✅ OTP verified successfully');
+    // if (otp === generatedOtp) {
+    //   // OTP verified successfully
+    //   console.log('✅ OTP verified successfully');
 
-      // Simulate successful registration
-      setTimeout(() => {
-        navigate('/login');
-      }, 1000);
-    } else {
-      setOtpError('Invalid OTP. Please try again.');
-    }
+    //   // Simulate successful registration
+    //   setTimeout(() => {
+    //     navigate('/login');
+    //   }, 1000);
+    // } else {
+    //   setOtpError('Invalid OTP. Please try again.');
+    // }
   };
 
-  const resendOTP = () => {
-    const newOtp = generateOTP();
-    console.log('New OTP generated:', newOtp);
-    setOtpError('');
-    setOtp('');
-  };
+  // const resendOTP = () => {
+  //   const newOtp = generateOTP();
+  //   console.log('New OTP generated:', newOtp);
+  //   setOtpError('');
+  //   setOtp('');
+  // };
 
   const goBackToRegistration = () => {
     setCurrentStep(1);
@@ -198,11 +208,11 @@ const RegisterPage = () => {
               <p>We've sent a verification code to {formData.email}</p>
             </div>
 
-            <div className="otp-info">
+            {/* <div className="otp-info">
               <p className="otp-note">
                 <strong>Demo Mode:</strong> Use this OTP: <span className="otp-display">{generatedOtp}</span>
               </p>
-            </div>
+            </div> */}
 
             <form onSubmit={handleOTPVerification}>
               <div className="form-group">
@@ -228,9 +238,9 @@ const RegisterPage = () => {
             </form>
 
             <div className="otp-actions">
-              <button type="button" className="resend-otp-btn" onClick={resendOTP}>
+              {/* <button type="button" className="resend-otp-btn" onClick={resendOTP}>
                 Resend OTP
-              </button>
+              </button> */}
               <button type="button" className="back-btn" onClick={goBackToRegistration}>
                 Back to Registration
               </button>
@@ -282,13 +292,13 @@ const RegisterPage = () => {
             <div className="form-group">
               <Input
                 type="text"
-                name="username"
+                name="full_name"
                 placeholder="Full Name"
-                value={formData.username}
+                value={formData.full_name}
                 onChange={handleInputChange}
-                error={!!errors.username}
+                error={!!errors.full_name}
               />
-              {errors.username && <span className="error-message">{errors.username}</span>}
+              {errors.full_name && <span className="error-message">{errors.full_name}</span>}
             </div>
 
             <div className="form-group">
@@ -313,6 +323,30 @@ const RegisterPage = () => {
                 error={!!errors.role}
               />
               {errors.role && <span className="error-message">{errors.role}</span>}
+            </div>
+
+            <div className="form-group">
+              <Input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                error={!!errors.phone}
+              />
+              {errors.phone && <span className="error-message">{errors.phone}</span>}
+            </div>
+
+            <div className="form-group">
+              <Input
+                type="text"
+                name="short_bio"
+                placeholder="Short Bio (optional)"
+                value={formData.short_bio}
+                onChange={handleInputChange}
+                error={!!errors.short_bio}
+              />
+              {errors.short_bio && <span className="error-message">{errors.short_bio}</span>}
             </div>
 
             <div className="form-group">
