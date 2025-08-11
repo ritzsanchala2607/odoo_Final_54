@@ -5,10 +5,10 @@ module.exports = (sequelize, DataTypes) => {
     url: { type: DataTypes.TEXT, allowNull: false },
     caption: DataTypes.TEXT,
     is_cover: { type: DataTypes.BOOLEAN, defaultValue: false },
-    sort_idx: DataTypes.INTEGER
+    sort_idx: { type: DataTypes.INTEGER, defaultValue: 0 }
   }, {
-    tableName: 'venue_photo',
-    timestamps: true
+    tableName: 'venue_photos',
+    timestamps: false
   });
 
   VenuePhoto.associate = (models) => {

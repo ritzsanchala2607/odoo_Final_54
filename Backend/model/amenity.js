@@ -3,8 +3,8 @@ module.exports = (sequelize, DataTypes) => {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     name: { type: DataTypes.TEXT, allowNull: false }
   }, {
-    tableName: 'amenity',
-    timestamps: true
+    tableName: 'amenities',
+    timestamps: false
   });
 
   Amenity.associate = (models) => {
