@@ -53,7 +53,11 @@ async function signup(req, res) {
 
 async function login(req, res) {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
   try {
     const result = await userService.login(req.body);
     return res.json(result);

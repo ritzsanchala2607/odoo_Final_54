@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../helper/db.helper');
+const { sendMail } = require('../helper/send_mail');
 
 async function signup({ email, password, full_name, role, avatar_url , phone , short_bio }) {
     const existingUser = await User.findOne({
@@ -31,7 +32,12 @@ async function signup({ email, password, full_name, role, avatar_url , phone , s
     //Commented out email sending logic for now to avoid reference errors
     let mailSubject = "Verification Email From Griwa Internationals";
     let content = '<p> Hello ' + full_name + ', Please verify your email address.</p>';
-    await sendMail(email, mailSubject, content);
+    console.log(email, mailSubject, content);
+    await sendMail({
+      to: email,
+      subject: mailSubject,
+      html: content
+    });
 
     return user;
 }
