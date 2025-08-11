@@ -10,7 +10,7 @@ import VenuesPage from './pages/VenuesPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
 
-import VerifyOtpPage from './pages/VerifyOtpPage';
+
 import VenueDetails from './pages/VenueDetails';
 // import OwnerHomePage  from './pages/OwnerHomePage';
 
@@ -46,17 +46,7 @@ function App() {
               <Route path="/venue/:id" element={<VenueDetails />} />
             </Route>
             
-            {/* Catch-all route */}
-
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/venues" element={<VenuesPage />} />
-            <Route path="/owner-home" element={<OwnerHomePage />} />
-            <Route path="/mybookings" element={<MyBookingsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/venue/:id" element={<VenueDetails />} />
-            <Route path="/admin" element={<Dashboard />} />
             {/* Catch-all route for any unmatched paths */}
-
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </div>

@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       // Server route may not exist; do not clear local state in this case
       console.log('Check auth failed, falling back to local state', error);
-    } finally 
+    } finally {
       setLoading(false);
     }
   };
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         setUser(response.data.user);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(response.data.user));
-        return { success: true };
+        return { success: true, user: response.data.user };
       }
     } catch (error) {
       return { 
@@ -91,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(false);
       setUser(null);
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('userRole');
     }
   };
 

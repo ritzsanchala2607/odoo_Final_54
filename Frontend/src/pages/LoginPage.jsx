@@ -21,18 +21,14 @@ const LoginPage = () => {
     try {
       const result = await login(email, password);
       
-      if (result?.success) {
-        // Get the user role from localStorage which was set by AuthContext
-        const userRole = localStorage.getItem('userRole');
-        console.log(userRole);
-        console.log(userRole == 'owner' ? 'Owner role detected' : 'User role detected');
-        // Navigate based on role
-        if (userRole === 'owner') {
+      if (result?.success && result?.user) {
+        const role = result.user.role;
+        if (role === 'owner') {
           navigate('/owner-home');
-        } else if(userRole ==='admin') {
+        } else if (role === 'admin') {
           navigate('/admin-home');
-        }else{
-           navigate('/home');
+        } else {
+          navigate('/home');
         }
       } else {
         setError(result?.error || 'Login failed. Please try again.');
