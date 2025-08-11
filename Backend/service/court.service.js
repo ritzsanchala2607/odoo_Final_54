@@ -53,5 +53,13 @@ async function deleteCourt(courtId) {
   return court;
 }
 
-module.exports = { createCourt, listCourts, getCourt, updateCourt, deleteCourt };
+// <<<<<<< krish
+async function listAllCourts() {
+  return Court.findAll();
+}
+
+// module.exports = { createCourt, listCourts  , listAllCourts};
+// =======
+module.exports = { createCourt, listCourts, getCourt, updateCourt, deleteCourt , listAllCourts};
+// >>>>>>> main
 

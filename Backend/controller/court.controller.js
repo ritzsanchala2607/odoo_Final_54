@@ -21,14 +21,26 @@ async function list(req, res) {
   }
 }
 
+async function listAll(req, res) {
+  try {
+    const courts = await courtService.listAllCourts();
+    return res.json({ courts });
+  } catch(e) {
+    console.log(e);
+    return res.status(400).json({ message: e.message });
+  }
+}
+
 async function get(req, res) {
   try {
     const court = await courtService.getCourt(req.params.id);
     return res.json({ court });
+
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
 }
+
 
 async function update(req, res) {
   const errors = validationResult(req);
@@ -50,5 +62,5 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { create, list, get, update, remove };
+module.exports = { create, list, get, update, remove, listAll };
 
