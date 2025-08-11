@@ -124,7 +124,9 @@ const handleVenueSubmit = async (e) => {
     } catch (err) {
       console.error('Logout failed:', err);
     }
+
     console.log('Logout clicked');
+
   };
   
   // Venues state
@@ -239,7 +241,6 @@ const handleCourtSubmit = async (e) => {
     alert('Failed to create court. Please try again.');
   }
 };
-
 
 
   // Mock data
