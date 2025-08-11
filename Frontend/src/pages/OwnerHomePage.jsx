@@ -73,6 +73,12 @@ const OwnerHomePage = () => {
     } catch (err) {
       console.error('Logout failed:', err);
     }
+
+
+
+    console.log('Logout clicked');
+
+
   };
 
   // Fetch venues and courts on component mount
@@ -316,6 +322,7 @@ const OwnerHomePage = () => {
     setSelectedVenue(null);
     setShowCourtForm(true);
   };
+
 
   // Open create court modal
   const openCreateCourt = () => {
