@@ -8,7 +8,17 @@ async function createBooking(payload) {
     const court = await Court.findByPk(payload.court_id);
     if (court) player_capacity = court.capacity || 1;
   }
-  const booking = await Booking.create({ ...payload, booking_ref, player_capacity });
+  // compute unit_price by pricing_mode
+  const court = await Court.findByPk(payload.court_id);
+  const pricing_mode = payload.pricing_mode || 'per_hour';
+  let unit_price = 0;
+  if (pricing_mode === 'per_person') {
+    unit_price = court?.price_per_person || 0;
+  } else {
+    unit_price = court?.price_per_hour || 0;
+  }
+  const effective_refund_ratio = court?.refund_ratio_override ?? null;
+  const booking = await Booking.create({ ...payload, booking_ref, player_capacity, pricing_mode, unit_price, effective_refund_ratio });
   // host auto-joins as 'host'
   await BookingParticipant.create({ booking_id: booking.id, user_id: payload.user_id, role: 'host', status: 'joined' });
   return booking;

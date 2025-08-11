@@ -4,6 +4,8 @@ module.exports = (sequelize, DataTypes) => {
     booking_id: { type: DataTypes.UUID, unique: true },
     method: { type: DataTypes.TEXT },
     amount: { type: DataTypes.DECIMAL(10, 2) },
+    amount_cash: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
+    credits_used: { type: DataTypes.INTEGER, defaultValue: 0 },
     currency: { type: DataTypes.TEXT, defaultValue: 'INR' },
     status: { type: DataTypes.TEXT },
     provider_txn_id: { type: DataTypes.TEXT },
