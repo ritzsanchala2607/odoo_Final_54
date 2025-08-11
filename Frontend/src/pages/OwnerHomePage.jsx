@@ -14,11 +14,11 @@ import {
 
 const OwnerHomePage = () => {
     const { user } = useAuth();
-    
   const [activeTab, setActiveTab] = useState('overview');
   const [performanceFilter, setPerformanceFilter] = useState('all');
   const [ratingFilter, setRatingFilter] = useState('all');
   const [selectedPrediction, setSelectedPrediction] = useState(null);
+
 
   // Get the current user from AuthContext
 
@@ -38,6 +38,7 @@ const OwnerHomePage = () => {
       console.error('Logout failed:', err);
     }
   };
+
   // Mock data
   const courtBookingData = [
     { court: 'Arena Sports Complex - Court A', venue: 'Arena Sports Complex', bookings: 245, sport: 'Badminton', revenue: 12250, rating: 4.8, utilization: 92, peakHours: '6-8 PM' },
@@ -117,6 +118,7 @@ const OwnerHomePage = () => {
     { sport: 'Cricket', count: 132, percentage: 10 }
   ];
 
+  // Enhanced prediction data with interactive features
   const predictionMetrics = [
     { 
       id: 'bookings',
