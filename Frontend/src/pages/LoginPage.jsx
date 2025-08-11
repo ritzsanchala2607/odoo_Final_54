@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios'; // ← make sure this is imported
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -11,37 +11,18 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
-        { email, password },
-        { withCredentials: true }
-      );
-
-      console.log(response.data); // Optional: for debugging
-
-      // If login succeeds
+    setError('');
+    
+    const result = await login(email, password);
+    
+    if (result.success) {
       navigate('/home');
-    } catch (err) {
-      console.error(err);
-
-      // Check if it's a network/backend error vs authentication error
-      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
-        // Backend is not available, but we can still navigate
-        console.log('Backend unavailable, proceeding with frontend-only mode');
-        setError('Backend unavailable. Proceeding in demo mode.');
-
-        // Simulate successful login and navigate
-        setTimeout(() => {
-          navigate('/home');
-        }, 1500);
-      } else {
-        // Authentication error
-        setError(err.response?.data?.message || 'Login failed. Please try again.');
-      }
+    } else {
+      setError(result.error);
     }
   };
 
