@@ -561,7 +561,7 @@ const OwnerHomePage = () => {
                 <img src={displayAvatar} alt={displayName} className="profile-avatar" />
                 <div className="profile-details">
                   <div className="profile-name">{displayName}</div>
-                  {/* <div className="profile-email">{displayEmail}</div> */}
+                  <div className="profile-email">{displayEmail}</div>
                 </div>
               </div>
               <button onClick={handleLogout} className="logout-button">
