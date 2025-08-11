@@ -1,12 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Header.css';
 
 const Header = ({ showNavigation = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
@@ -14,6 +16,11 @@ const Header = ({ showNavigation = false }) => {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const navigationItems = [
     { label: 'Home', path: '/home' },
@@ -54,13 +61,23 @@ const Header = ({ showNavigation = false }) => {
                   className="search-input"
                 />
               </div>
-              <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
-              <button className="get-started-btn" onClick={() => navigate('/register')}>
-                Sign Up
-              </button>
-              <div className="user-avatar" onClick={() => navigate('/profile')}>
-                <img src="../assets/user_img.png" alt="User" />
-              </div>
+              {isAuthenticated ? (
+                <>
+                  <div className="user-avatar" onClick={() => navigate('/profile')}>
+                    <img src="../assets/user_img.png" alt="User" />
+                  </div>
+                  <button className="logout-btn" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+                  <button className="get-started-btn" onClick={() => navigate('/register')}>
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
           </>
         )}
@@ -70,10 +87,18 @@ const Header = ({ showNavigation = false }) => {
             <button className="nav-link" onClick={() => navigate('/venues')}>Venues</button>
             <button className="nav-link" onClick={() => navigate('/mybookings')}>My Bookings</button>
             <button className="nav-link" onClick={() => navigate('/profile')}>Profile</button>
-            <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
-            <button className="get-started-btn" onClick={() => navigate('/home')}>
-              Get Started
-            </button>
+            {isAuthenticated ? (
+              <button className="logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            ) : (
+              <>
+                <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+                <button className="get-started-btn" onClick={() => navigate('/home')}>
+                  Get Started
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
