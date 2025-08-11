@@ -29,8 +29,7 @@ const RegisterPage = () => {
 
   const roleOptions = [
     { label: 'User', value: 'user' },
-    { label: 'Owner', value: 'owner' },
-    { label: 'Admin', value: 'admin' }
+    { label: 'Owner', value: 'owner' }
   ];
 
   const handleInputChange = (e) => {
