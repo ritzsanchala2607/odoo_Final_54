@@ -1,4 +1,42 @@
+// <<<<<<< HEAD
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { useAuth } from "../context/AuthContext";
+// import {
+//   PieChart,
+//   Pie,
+//   Cell,
+//   BarChart,
+//   Bar,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   Legend,
+//   ResponsiveContainer,
+//   LineChart,
+//   Line,
+// } from "recharts";
+// import {
+//   Users,
+//   MapPin,
+//   Calendar,
+//   AlertTriangle,
+//   TrendingUp,
+//   Activity,
+//   Building,
+//   DollarSign,
+//   CheckCircle,
+//   XCircle,
+//   Plus,
+//   Edit,
+//   Trash2,
+//   Eye,
+// } from "lucide-react";
+// import "./Dashboard.css";
+// =======
 import React, { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -32,7 +70,8 @@ import {
   Trash2,
   Eye,
 } from "lucide-react";
-import "./Dashboard.css";
+// import './Dashboard.css';
+// >>>>>>> origin/main
 
 const AdminDashboard = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState("7d");

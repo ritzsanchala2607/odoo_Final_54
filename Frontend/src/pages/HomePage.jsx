@@ -120,7 +120,7 @@ const HomePage = () => {
                     <div className="sports">{v.sports.join(' ')}</div>
                     <div className="loc">📍 {v.location}</div>
                   </div>
-                  <Button variant="primary" fullWidth onClick={() => navigate('/venues')}>Book Now</Button>
+                  <Button variant="primary" fullWidth onClick={() => navigate('/venues')}>Get More Details</Button>
                 </div>
               </div>
             ))}
@@ -133,7 +133,7 @@ const HomePage = () => {
         </section>
 
         {/* Popular Sports */}
-        <section className="section">
+        {/* <section className="section">
           <div className="section-header">
             <h2>Popular Sports in Your Area</h2>
             <div className="slider-controls">
@@ -152,10 +152,10 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* Upcoming Matches / Find Players */}
-        <section className="section">
+        {/* <section className="section">
           <div className="section-header">
             <h2>Upcoming Matches • Find Players</h2>
             <div className="slider-controls">
@@ -177,7 +177,7 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* Special Offers & Promotions */}
         <section className="section offers">

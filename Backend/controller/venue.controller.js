@@ -2,12 +2,27 @@ const { validationResult } = require('express-validator');
 const venueService = require('../service/venue.service');
 
 async function create(req, res) {
+  console.log('Venue creation request body:', req.body);
+  console.log('User:', req.user);
+  
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+  console.log('Validation errors:', errors.array());
+  
+  if (!errors.isEmpty()) {
+    console.log('Validation failed, returning errors:', errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+    
     const venue = await venueService.createVenue({ ...req.body, owner_id: req.user.id });
     return res.status(201).json({ venue });
   } catch (err) {
+    console.error('Venue creation error:', err);
     return res.status(400).json({ message: err.message });
   }
 }
@@ -43,5 +58,15 @@ async function approve(req, res) {
   }
 }
 
-module.exports = { create, list, get, approve };
+async function listAll(req, res) {
+  try {
+    const venues = await venueService.listAllVenues();
+    return res.json({ venues });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+module.exports = {
+  listAll, create, list, get, approve };
 
