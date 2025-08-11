@@ -21,5 +21,27 @@ async function list(req, res) {
   }
 }
 
-module.exports = { create, list };
+async function get(req, res) {
+  try {
+    const venue = await venueService.getVenueWithCourts(req.params.id);
+    return res.json({ venue });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+async function approve(req, res) {
+  try {
+    const venue = await venueService.approveVenue(req.params.id, {
+      status: req.body.status,
+      approved_by: req.user.id,
+      decision_notes: req.body.decision_notes
+    });
+    return res.json({ venue });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { create, list, get, approve };
 

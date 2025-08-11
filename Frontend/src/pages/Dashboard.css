@@ -660,3 +660,695 @@ body {
         width: 100%;
     }
 }
+
+/* Venue Approval Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.venue-approval-modal {
+  background: var(--bg-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  max-width: 800px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid var(--border-gray);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background-color: var(--bg-gray);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.no-venues {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.venues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.venue-item {
+  background: var(--bg-gray);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--border-gray);
+  transition: all 0.2s;
+}
+
+.venue-item:hover {
+  border-color: var(--primary-teal);
+  box-shadow: var(--shadow-md);
+}
+
+.venue-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.venue-owner {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.venue-location {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.venue-description {
+  margin: 8px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.venue-price {
+  margin: 4px 0;
+  color: var(--accent-orange);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.venue-date {
+  margin: 4px 0;
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.venue-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.approve-btn, .reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.approve-btn {
+  background-color: var(--success-green);
+  color: white;
+}
+
+.approve-btn:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+.reject-btn {
+  background-color: var(--danger-red);
+  color: white;
+}
+
+.reject-btn:hover {
+  background-color: #DC2626;
+  transform: translateY(-1px);
+}
+
+/* Responsive styles for modal */
+@media (max-width: 768px) {
+  .venue-approval-modal {
+    margin: 10px;
+    max-height: 90vh;
+  }
+  
+  .modal-header {
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .venue-actions {
+    flex-direction: column;
+  }
+  
+  .approve-btn, .reject-btn {
+    justify-content: center;
+  }
+}
+
+/* Court Management Modal Styles */
+.court-management-modal {
+  max-width: 900px;
+  max-height: 85vh;
+}
+
+.venue-summary {
+  background: var(--bg-gray);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.venue-summary p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.status-pending {
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+.status-approved {
+  color: var(--success-green);
+  font-weight: 600;
+}
+
+.status-rejected {
+  color: var(--danger-red);
+  font-weight: 600;
+}
+
+.status-active {
+  color: var(--success-green);
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.courts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.courts-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.add-court-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-court-btn:hover {
+  background-color: var(--primary-teal-dark);
+  transform: translateY(-1px);
+}
+
+.courts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.court-item {
+  background: var(--bg-gray);
+  border: 1px solid var(--border-gray);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: all 0.2s;
+}
+
+.court-item:hover {
+  border-color: var(--primary-teal);
+  box-shadow: var(--shadow-sm);
+}
+
+.court-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.court-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.court-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-btn {
+  background-color: var(--info-blue);
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #2563EB;
+}
+
+.delete-btn {
+  background-color: var(--danger-red);
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #DC2626;
+}
+
+.no-courts {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+/* Court Form Modal Styles */
+.court-form-overlay {
+  z-index: 1100;
+}
+
+.court-form-modal {
+  max-width: 600px;
+  max-height: 80vh;
+}
+
+.court-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-gray);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-gray);
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  background: var(--bg-gray);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-gray);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+  background: var(--border-gray);
+  color: var(--text-primary);
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover {
+  background: var(--primary-teal-dark);
+  transform: translateY(-1px);
+}
+
+.view-courts-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--info-blue);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-courts-btn:hover {
+  background-color: #2563EB;
+  transform: translateY(-1px);
+}
+
+.venue-courts {
+  margin: 4px 0;
+  color: var(--info-blue);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Responsive styles for court management */
+@media (max-width: 768px) {
+  .court-management-modal {
+    margin: 10px;
+    max-height: 90vh;
+  }
+  
+  .courts-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .court-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .court-actions {
+    justify-content: flex-end;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+/* Enhanced Venue Card Styles */
+.venue-courts-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.venue-courts-count {
+  margin: 4px 0;
+  color: var(--info-blue);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.venue-capacity {
+  margin: 4px 0;
+  color: var(--success-green);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.venue-sports {
+  margin: 4px 0;
+  color: var(--secondary-purple);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.venue-avg-price {
+  margin: 4px 0;
+  color: var(--accent-orange);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.venue-item {
+  background: var(--bg-gray);
+  border: 1px solid var(--border-gray);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.venue-item:hover {
+  border-color: var(--primary-teal);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.venue-info h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--primary-teal);
+  padding-bottom: 8px;
+}
+
+.venue-owner {
+  margin: 6px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.venue-location {
+  margin: 6px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.venue-description {
+  margin: 8px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.venue-price {
+  margin: 6px 0;
+  color: var(--accent-orange);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.venue-date {
+  margin: 6px 0;
+  color: var(--text-light);
+  font-size: 12px;
+}
+
+.venue-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.view-courts-btn, .approve-btn, .reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  justify-content: center;
+  min-width: 100px;
+}
+
+.view-courts-btn {
+  background-color: var(--info-blue);
+  color: white;
+}
+
+.view-courts-btn:hover {
+  background-color: #2563EB;
+  transform: translateY(-1px);
+}
+
+.approve-btn {
+  background-color: var(--success-green);
+  color: white;
+}
+
+.approve-btn:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+.reject-btn {
+  background-color: var(--danger-red);
+  color: white;
+}
+
+.reject-btn:hover {
+  background-color: #DC2626;
+  transform: translateY(-1px);
+}
+
+/* Responsive styles for venue cards */
+@media (max-width: 768px) {
+  .venue-item {
+    padding: 16px;
+  }
+  
+  .venue-actions {
+    flex-direction: column;
+  }
+  
+  .view-courts-btn, .approve-btn, .reject-btn {
+    width: 100%;
+  }
+  
+  .venue-courts-info {
+    padding: 10px;
+  }
+}
