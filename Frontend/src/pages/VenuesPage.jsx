@@ -31,20 +31,19 @@ const VenuesPage = () => {
     const fetchCourts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:3000/api/courts/all`);
-        // Your backend returns { courts: [...] }
-        const mapped = res.data.courts.map((court) => ({
-          id: court.id,
-          name: court.name,
-          category: court.sport_type || "Other",
-          location: court.venue?.address || court.venue?.name || "Unknown",
-          capacity: court.capacity ? `${court.capacity} people` : "",
-          price: court.price_per_hour || 0,
-          rating: court.venue?.rating_avg || 0,
-          type: "Unknown", // venue_type is not available in the model
-          distance: court.venue?.distance || 0, // distance is not in the model
-          image: "https://via.placeholder.com/400x300?text=Venue+Image", // image_url is not available
-          available: court.is_active,
+        const res = await axios.get(`http://localhost:3000/api/venues/all`);
+        const mapped = res.data.venues.map((venue) => ({
+          id: venue.id,
+          name: venue.name,
+          category: venue.venue_type || "General", // Assuming a venue_type or default
+          location: venue.address || venue.name || "Unknown",
+          capacity: "", // Not directly available on venue
+          price: venue.starting_price || 0,
+          rating: venue.rating_avg || 0,
+          type: venue.venue_type || "Unknown",
+          distance: venue.distance || 0, // distance is not in the model
+          image: venue.photos?.[0]?.url || "https://via.placeholder.com/400x300?text=Venue+Image",
+          available: true, // Assuming venues are available
         }));
         setVenues(mapped);
       } catch (error) {
