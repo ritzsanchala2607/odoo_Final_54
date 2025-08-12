@@ -47,6 +47,9 @@ const OwnerHomePage = () => {
     maxCourts: 1
   });
 
+  // Recent bookings state for owner
+  const [recentOwnerBookings, setRecentOwnerBookings] = useState([]);
+
   // Court form state
   const [newCourt, setNewCourt] = useState({
     name: "",
@@ -86,8 +89,23 @@ const OwnerHomePage = () => {
     if (user?.id) {
       fetchVenues();
       fetchCourts();
+      fetchRecentOwnerBookings();
     }
   }, [user?.id]);
+
+  const fetchRecentOwnerBookings = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/bookings/owner?limit=6`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setRecentOwnerBookings(data.bookings || []);
+    } catch (e) {
+      // ignore
+    }
+  };
 
   // Fetch all courts for the owner
   const fetchCourts = async () => {
@@ -386,13 +404,17 @@ const OwnerHomePage = () => {
     { court: 'Victory Sports - Court B', venue: 'Victory Sports', bookings: 98, sport: 'Badminton', revenue: 4900, rating: 4.1, utilization: 55, peakHours: '7-9 PM' }
   ];
 
-  const recentBookings = [
-    { id: 1, user: 'Rajesh Kumar', venue: 'Arena Sports Complex', court: 'Court A', sport: 'Badminton', date: '2024-08-11', time: '18:00-19:00', status: 'Confirmed', amount: 500 },
-    { id: 2, user: 'Priya Singh', venue: 'Metro Sports Hub', court: 'Court 1', sport: 'Tennis', date: '2024-08-11', time: '19:00-20:00', status: 'Confirmed', amount: 600 },
-    { id: 3, user: 'Amit Sharma', venue: 'City Turf', court: 'Field B', sport: 'Football', date: '2024-08-11', time: '17:30-18:30', status: 'Pending', amount: 800 },
-    { id: 4, user: 'Neha Patel', venue: 'Elite Sports Center', court: 'Court 3', sport: 'Badminton', date: '2024-08-11', time: '20:00-21:00', status: 'Confirmed', amount: 450 },
-    { id: 5, user: 'Vikram Reddy', venue: 'Sports Plaza', court: 'Court 2', sport: 'Basketball', date: '2024-08-11', time: '16:00-17:00', status: 'Confirmed', amount: 550 }
-  ];
+  const recentBookings = recentOwnerBookings.map(b => ({
+    id: b.id,
+    user: b.user?.full_name || b.user?.email || 'User',
+    venue: b.venue?.name || 'Venue',
+    court: b.court?.name || 'Court',
+    sport: b.court?.sport_type || '',
+    date: b.start_at ? new Date(b.start_at).toLocaleDateString() : '',
+    time: b.start_at && b.end_at ? `${new Date(b.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}-${new Date(b.end_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '',
+    status: (b.status || 'confirmed').charAt(0).toUpperCase() + (b.status || 'confirmed').slice(1),
+    amount: b.total_amount,
+  }));
 
   const customerReviews = [
     { id: 1, user: 'Rahul Sharma', venue: 'Arena Sports Complex', court: 'Court A', rating: 5, comment: 'Excellent facilities and very clean courts. Staff was helpful too!', date: '2 hours ago', sport: 'Badminton', verified: true },
@@ -630,7 +652,9 @@ const OwnerHomePage = () => {
                 <h3>Recent Bookings</h3>
               </div>
               <div className="card-body">
-                {recentBookings.map((booking) => (
+                {recentBookings.length === 0 ? (
+                  <div className="no-courts">No recent bookings</div>
+                ) : recentBookings.map((booking) => (
                   <div key={booking.id} className="booking-item">
                     <div className="booking-info">
                       <div className="booking-user">{booking.user}</div>

@@ -21,22 +21,106 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  // Mock data
-  const cityWiseData = [
-    { name: 'Mumbai', value: 35, bookings: 1250, revenue: 87500 },
-    { name: 'Delhi', value: 25, bookings: 890, revenue: 62300 },
-    { name: 'Bangalore', value: 20, bookings: 720, revenue: 50400 },
-    { name: 'Chennai', value: 12, bookings: 430, revenue: 30100 },
-    { name: 'Pune', value: 8, bookings: 290, revenue: 20300 }
-  ];
+  // Live stats
+  const [stats, setStats] = useState({ activeUsers: 0, activeVenues: 0, activeCourts: 0, todayRevenue: 0 });
 
-  const gameWiseEarnings = [
-    { name: 'Badminton', value: 40, earnings: 142000, courts: 45 },
-    { name: 'Tennis', value: 25, earnings: 89250, courts: 28 },
-    { name: 'Football Turf', value: 20, earnings: 71400, courts: 15 },
-    { name: 'Basketball', value: 10, earnings: 35700, courts: 12 },
-    { name: 'Cricket Net', value: 5, earnings: 17850, courts: 8 }
-  ];
+  // Live distributions
+  const [cityWiseData, setCityWiseData] = useState([]);
+  const [gameWiseEarnings, setGameWiseEarnings] = useState([]);
+
+  // Users management state
+  const [usersPage, setUsersPage] = useState(1);
+  const [usersPageSize] = useState(10);
+  const [usersQuery, setUsersQuery] = useState('');
+  const [usersRoleFilter, setUsersRoleFilter] = useState('');
+  const [usersStatusFilter, setUsersStatusFilter] = useState('');
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersList, setUsersList] = useState([]);
+  const [usersCount, setUsersCount] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const headers = { Authorization: `Bearer ${token}` };
+
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/admin/stats', { headers });
+        if (!res.ok) return; // silently ignore for non-admin
+        const data = await res.json();
+        setStats({
+          activeUsers: data.activeUsers || 0,
+          activeVenues: data.activeVenues || 0,
+          activeCourts: data.activeCourts || 0,
+          todayRevenue: data.todayRevenue || 0,
+        });
+      } catch (_) {}
+    };
+
+    const fetchDistributions = async () => {
+      try {
+        const res = await fetch('/api/admin/distributions', { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        setCityWiseData(data.cityWise || []);
+        setGameWiseEarnings(data.gameWise || []);
+      } catch (_) {}
+    };
+
+    fetchStats();
+    fetchDistributions();
+  }, []);
+
+  // Fetch users list
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      params.set('page', String(usersPage));
+      params.set('page_size', String(usersPageSize));
+      if (usersQuery) params.set('q', usersQuery);
+      if (usersRoleFilter) params.set('role', usersRoleFilter);
+      if (usersStatusFilter) params.set('status', usersStatusFilter);
+      const res = await fetch(`/api/admin/users?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setUsersList(data.rows || []);
+      setUsersCount(data.count || 0);
+    } catch (_) {
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [usersPage, usersQuery, usersRoleFilter, usersStatusFilter]);
+
+  const toggleUserActive = async (id, current) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/users/${id}/active`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ is_active: !current })
+      });
+      if (res.ok) fetchUsers();
+    } catch (_) {}
+  };
+
+  const changeUserRole = async (id, role) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/admin/users/${id}/role`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ role })
+      });
+      if (res.ok) fetchUsers();
+    } catch (_) {}
+  };
 
   const suspiciousActivities = [
     { id: 1, type: 'Multiple bookings', user: 'user_12345', venue: 'Sports Hub Mumbai', time: '2 hours ago', severity: 'high' },
@@ -57,10 +141,10 @@ const AdminDashboard = () => {
   ];
 
   const statsCards = [
-    { title: 'Active Users', value: '12,486', change: '+12%', icon: Users, color: 'blue' },
-    { title: 'Active Venues', value: '340', change: '+8%', icon: Building, color: 'teal' },
-    { title: 'Active Courts', value: '1,247', change: '+15%', icon: MapPin, color: 'purple' },
-    { title: 'Today\'s Revenue', value: '₹45,280', change: '+23%', icon: DollarSign, color: 'orange' }
+    { title: 'Active Users', value: stats.activeUsers.toLocaleString(), change: '+12%', icon: Users, color: 'blue' },
+    { title: 'Active Venues', value: stats.activeVenues.toLocaleString(), change: '+8%', icon: Building, color: 'teal' },
+    { title: 'Active Courts', value: stats.activeCourts.toLocaleString(), change: '+15%', icon: MapPin, color: 'purple' },
+    { title: "Today's Revenue", value: `₹${Number(stats.todayRevenue || 0).toLocaleString()}`, change: '+23%', icon: DollarSign, color: 'orange' }
   ];
 
   const COLORS = ['#14B8A6', '#8B5CF6', '#F59E0B', '#EF4444', '#3B82F6'];
@@ -420,7 +504,7 @@ const AdminDashboard = () => {
                     className="legend-color" 
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   ></div>
-                  <span>{item.name}: ₹{item.revenue.toLocaleString()}</span>
+                  <span>{item.name}: ₹{(item.revenue || 0).toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -453,7 +537,7 @@ const AdminDashboard = () => {
                     ))}
                   </Pie>
                   <Tooltip formatter={(value, name, props) => [
-                    `₹${props.payload.earnings.toLocaleString()} (${props.payload.courts} courts)`,
+                    `₹${(props.payload.earnings || 0).toLocaleString()} (${props.payload.courts} courts)`,
                     'Earnings'
                   ]} />
                 </PieChart>
@@ -466,10 +550,84 @@ const AdminDashboard = () => {
                     className="legend-color" 
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   ></div>
-                  <span>{item.name}: ₹{item.earnings.toLocaleString()}</span>
+                  <span>{item.name}: ₹{(item.earnings || 0).toLocaleString()}</span>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Users Management */}
+        <div className="chart-card full-width">
+          <div className="chart-header">
+            <h3>Users</h3>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input
+                placeholder="Search users (name/email)"
+                value={usersQuery}
+                onChange={(e) => { setUsersPage(1); setUsersQuery(e.target.value); }}
+              />
+              <select value={usersRoleFilter} onChange={(e) => { setUsersPage(1); setUsersRoleFilter(e.target.value); }}>
+                <option value="">All roles</option>
+                <option value="user">User</option>
+                <option value="owner">Owner</option>
+                <option value="admin">Admin</option>
+              </select>
+              <select value={usersStatusFilter} onChange={(e) => { setUsersPage(1); setUsersStatusFilter(e.target.value); }}>
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div className="chart-container" style={{ overflowX: 'auto' }}>
+            {usersLoading ? (
+              <div className="loading-spinner">Loading...</div>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Credits</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usersList.map(u => (
+                    <tr key={u.id}>
+                      <td>{u.full_name || '—'}</td>
+                      <td>{u.email}</td>
+                      <td>
+                        <select value={u.role} onChange={(e) => changeUserRole(u.id, e.target.value)}>
+                          <option value="user">User</option>
+                          <option value="owner">Owner</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                      <td>
+                        <span className={`status-${u.is_active ? 'active' : 'inactive'}`}>{u.is_active ? 'Active' : 'Inactive'}</span>
+                      </td>
+                      <td>{u.credit_balance}</td>
+                      <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <button className="action-btn" onClick={() => toggleUserActive(u.id, u.is_active)}>
+                          {u.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div className="pagination">
+            <button disabled={usersPage <= 1} onClick={() => setUsersPage(p => Math.max(1, p - 1))}>Prev</button>
+            <span>Page {usersPage} of {Math.max(1, Math.ceil(usersCount / usersPageSize))}</span>
+            <button disabled={usersPage >= Math.ceil(usersCount / usersPageSize)} onClick={() => setUsersPage(p => p + 1)}>Next</button>
           </div>
         </div>
 

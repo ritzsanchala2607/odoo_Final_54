@@ -66,5 +66,15 @@ async function leave(req, res) {
   }
 }
 
-module.exports = { create, myBookings, cancel, join, approve, reject, leave };
+async function ownerBookings(req, res) {
+  try {
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const bookings = await bookingService.listOwnerBookings(req.user.id, limit);
+    return res.json({ bookings });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { create, myBookings, cancel, join, approve, reject, leave, ownerBookings };
 
