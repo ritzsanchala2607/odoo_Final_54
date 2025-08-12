@@ -17,6 +17,7 @@ const venueRouter = require('./routes/venue.routes');
 const courtRouter = require('./routes/court.routes');
 const bookingRouter = require('./routes/booking.routes');
 const reviewRouter = require('./routes/review.routes');
+const adminRouter = require('./routes/admin.routes');
 const paymentRouter = require('./routes/payment.routes');
 const facilityRouter = require('./routes/facility.routes');
 const notificationRouter = require('./routes/notification.routes');
@@ -26,7 +27,7 @@ const slotRouter = require('./routes/slot.routes');
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5174', // your frontend's URL
+    origin: 'http://localhost:5173', // your frontend's URL
     credentials: true
 }));
 
@@ -66,6 +67,7 @@ app.use('/api/venues', venueRouter);
 app.use('/api/courts', courtRouter);
 app.use('/api/bookings', bookingRouter);
 app.use('/api/reviews', reviewRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/facility', facilityRouter);
 app.use('/api/notifications', notificationRouter);

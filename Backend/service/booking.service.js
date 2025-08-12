@@ -180,6 +180,19 @@ async function listMyBookings(user_id) {
   return Booking.findAll({ where: { user_id }, order: [['created_at', 'DESC']] });
 }
 
+// List bookings for venues owned by a specific owner
+async function listOwnerBookings(owner_id, limit = 10) {
+  return Booking.findAll({
+    include: [
+      { model: User, as: 'user', attributes: ['id', 'full_name', 'email'] },
+      { model: Court, as: 'court', attributes: ['id', 'name', 'sport_type'] },
+      { model: Venue, as: 'venue', attributes: ['id', 'name'], where: { owner_id } },
+    ],
+    order: [['created_at', 'DESC']],
+    limit: Number(limit) || 10,
+  });
+}
+
 async function cancelBooking(id, user_id) {
   const booking = await Booking.findOne({ where: { id, user_id } });
   if (!booking) throw new Error('Booking not found');
@@ -248,6 +261,7 @@ module.exports = {
   joinBooking, 
   approveParticipant, 
   rejectParticipant, 
-  leaveBooking 
+  leaveBooking, 
+  listOwnerBookings 
 };
 

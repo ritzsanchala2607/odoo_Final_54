@@ -21,6 +21,27 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
+  // Live stats
+  const [stats, setStats] = useState({ activeUsers: 0, activeVenues: 0, activeCourts: 0, todayRevenue: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return; // silently ignore for non-admin
+        const data = await res.json();
+        setStats({
+          activeUsers: data.activeUsers || 0,
+          activeVenues: data.activeVenues || 0,
+          activeCourts: data.activeCourts || 0,
+          todayRevenue: data.todayRevenue || 0,
+        });
+      } catch (_) {}
+    };
+    fetchStats();
+  }, []);
+
   // Mock data
   const cityWiseData = [
     { name: 'Mumbai', value: 35, bookings: 1250, revenue: 87500 },
@@ -57,10 +78,10 @@ const AdminDashboard = () => {
   ];
 
   const statsCards = [
-    { title: 'Active Users', value: '12,486', change: '+12%', icon: Users, color: 'blue' },
-    { title: 'Active Venues', value: '340', change: '+8%', icon: Building, color: 'teal' },
-    { title: 'Active Courts', value: '1,247', change: '+15%', icon: MapPin, color: 'purple' },
-    { title: 'Today\'s Revenue', value: '₹45,280', change: '+23%', icon: DollarSign, color: 'orange' }
+    { title: 'Active Users', value: stats.activeUsers.toLocaleString(), change: '+12%', icon: Users, color: 'blue' },
+    { title: 'Active Venues', value: stats.activeVenues.toLocaleString(), change: '+8%', icon: Building, color: 'teal' },
+    { title: 'Active Courts', value: stats.activeCourts.toLocaleString(), change: '+15%', icon: MapPin, color: 'purple' },
+    { title: "Today's Revenue", value: `₹${Number(stats.todayRevenue || 0).toLocaleString()}`, change: '+23%', icon: DollarSign, color: 'orange' }
   ];
 
   const COLORS = ['#14B8A6', '#8B5CF6', '#F59E0B', '#EF4444', '#3B82F6'];
