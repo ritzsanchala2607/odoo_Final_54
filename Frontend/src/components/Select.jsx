@@ -13,7 +13,8 @@ const Select = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOptionClick = (option) => {
-    onChange(option.value);
+    const optionValue = typeof option === 'object' ? option.value : option;
+    onChange(optionValue);
     setIsOpen(false);
   };
 

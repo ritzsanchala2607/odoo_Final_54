@@ -2,16 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './CourtBookingModal.css';
 
-// Load Razorpay script helper
-const loadRazorpayScript = () => {
-  return new Promise((resolve) => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
+// Load Razorpay script helper (not used for booking)
+const loadRazorpayScript = () => new Promise((resolve) => resolve(true));
 
 const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) => {
   const { user } = useAuth();
@@ -112,62 +104,13 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
   const creditShortfall = hasEnoughCredits ? 0 : creditsNeeded - userBalance;
 
   const handleBuyCredits = async () => {
+    // Keep integrated Razorpay top-up if needed; not used for booking submission
     try {
       setError('');
       if (creditShortfall <= 0) return;
       setTopupLoading(true);
-
-      const token = localStorage.getItem('token');
-
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        setError('Razorpay SDK failed to load');
-        setTopupLoading(false);
-        return;
-      }
-
-      // Create credits order
-      const orderRes = await fetch('/api/payments/credits/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ amount: creditShortfall })
-      });
-      const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.message || 'Failed to create order');
-
-      const options = {
-        key: orderData.key,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'QuickCourt Credits',
-        description: `Top-up ₹${creditShortfall}`,
-        order_id: orderData.orderId,
-        handler: async function (response) {
-          try {
-            const verifyRes = await fetch('/api/payments/credits/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                amount: creditShortfall
-              })
-            });
-            const verifyData = await verifyRes.json();
-            if (!verifyRes.ok) throw new Error(verifyData.message || 'Verification failed');
-            // Refresh balance
-            await fetchUserBalance();
-          } catch (e) {
-            setError(e.message);
-          }
-        },
-        theme: { color: '#4B0082' },
-        modal: { ondismiss: () => setError('Payment cancelled') }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      // Open buy credits page for now to keep flow simple
+      window.location.href = '/buy-credits';
     } catch (e) {
       setError(e.message);
     } finally {
@@ -215,19 +158,16 @@ const CourtBookingModal = ({ isOpen, onClose, court, venue, onBookingConfirm }) 
         })
       });
 
+      const result = await response.json();
       if (response.ok) {
-        const result = await response.json();
         onBookingConfirm({
           booking: result.booking,
           court,
           venue,
-          totalAmount,
-          creditsUsed: creditsNeeded
         });
-        onClose();
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Booking failed');
+        // Surface overlap or credit errors
+        setError(result.message || 'Booking failed');
       }
     } catch (error) {
       setError('Network error. Please try again.');

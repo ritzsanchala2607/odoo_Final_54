@@ -1,4 +1,4 @@
-const { Booking, Payment, Court, Venue, User, BookingParticipant } = require('../helper/db.helper');
+const { Booking, Payment, Court, Venue, User, BookingParticipant, CreditTransaction } = require('../helper/db.helper');
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 
@@ -43,7 +43,7 @@ async function createBooking(payload) {
   let player_capacity = payload.player_capacity;
   if (!player_capacity) player_capacity = court.capacity || 1;
 
-  // compute unit_price by pricing_mode
+  // compute unit_price by pricing_mode and total based on duration
   const pricing_mode = payload.pricing_mode || 'per_hour';
   let unit_price = 0;
   if (pricing_mode === 'per_person') {
@@ -53,21 +53,83 @@ async function createBooking(payload) {
   }
   const effective_refund_ratio = court.refund_ratio_override ?? null;
 
-  const booking = await Booking.create({
-    ...payload,
-    venue_id: venueId,
-    start_at: startAt,
-    end_at: endAt,
-    booking_ref,
-    player_capacity,
-    pricing_mode,
-    unit_price,
-    effective_refund_ratio,
-  });
+  const durationHours = (endAt.getTime() - startAt.getTime()) / (1000 * 60 * 60);
+  if (durationHours <= 0) throw new Error('Invalid booking duration');
 
-  // host auto-joins as 'host'
-  await BookingParticipant.create({ booking_id: booking.id, user_id: payload.user_id, role: 'host', status: 'joined' });
-  return booking;
+  const computedTotal = pricing_mode === 'per_person'
+    ? (Number(unit_price) * Number(player_capacity) * durationHours)
+    : (Number(unit_price) * durationHours);
+
+  const creditsNeeded = Math.ceil(computedTotal);
+
+  // Ensure user has enough credits, deduct and record transaction atomically with booking
+  const db = require('../helper/db.helper');
+  return await db.sequelize.transaction(async (t) => {
+    // Re-check overlap within transaction window (best-effort)
+    const overlappingInTx = await Booking.findOne({
+      where: {
+        court_id: court.id,
+        status: { [Op.ne]: 'cancelled' },
+        [Op.and]: [
+          { start_at: { [Op.lt]: endAt } },
+          { end_at: { [Op.gt]: startAt } },
+        ],
+      },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+    if (overlappingInTx) throw new Error('This court is already booked for the selected time');
+
+    const user = await User.findByPk(payload.user_id, { transaction: t, lock: t.LOCK.UPDATE });
+    if (!user) throw new Error('User not found');
+    if ((user.credit_balance || 0) < creditsNeeded) {
+      throw new Error('Insufficient credits');
+    }
+
+    const booking = await Booking.create({
+      user_id: payload.user_id,
+      court_id: court.id,
+      venue_id: venueId,
+      start_at: startAt,
+      end_at: endAt,
+      booking_ref,
+      player_capacity,
+      pricing_mode,
+      unit_price,
+      effective_refund_ratio,
+      total_amount: Number(computedTotal.toFixed(2)),
+      status: 'confirmed',
+      visibility: payload.visibility || 'private',
+    }, { transaction: t });
+
+    await BookingParticipant.create({ booking_id: booking.id, user_id: payload.user_id, role: 'host', status: 'joined' }, { transaction: t });
+
+    // Deduct credits
+    user.credit_balance = (user.credit_balance || 0) - creditsNeeded;
+    await user.save({ transaction: t });
+
+    await CreditTransaction.create({
+      user_id: payload.user_id,
+      booking_id: booking.id,
+      amount: -creditsNeeded, // spend
+      type: 'spend',
+      reason: 'Court booking',
+      created_at: new Date(),
+    }, { transaction: t });
+
+    // Record payment row for audit
+    await Payment.create({
+      booking_id: booking.id,
+      method: 'credits',
+      amount: Number(computedTotal.toFixed(2)),
+      credits_used: creditsNeeded,
+      currency: 'INR',
+      status: 'completed',
+      created_at: new Date(),
+    }, { transaction: t });
+
+    return booking;
+  });
 }
 
 async function getBookings(query = {}) {

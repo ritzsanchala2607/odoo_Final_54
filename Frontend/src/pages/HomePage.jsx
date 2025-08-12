@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import SimpleMap from '../components/SimpleMap';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -10,12 +11,12 @@ const HomePage = () => {
 
   // Demo data
   const venues = useMemo(() => ([
-    { id: 1, name: 'City Sports Arena', rating: 4.7, sports: ['🏀', '🏸', '⚽️'], location: 'Downtown', image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1000&auto=format&fit=crop&q=60' },
-    { id: 2, name: 'Greenfield Courts', rating: 4.5, sports: ['🎾', '🏸'], location: 'Greenfield Ave', image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1000&auto=format&fit=crop&q=60' },
-    { id: 3, name: 'Skyline Sports Hub', rating: 4.8, sports: ['⚽️', '🏀'], location: 'Skyline Road', image: 'https://images.unsplash.com/photo-1518600506278-4e8ef466b810?w=1000&auto=format&fit=crop&q=60' },
-    { id: 4, name: 'Riverside Club', rating: 4.4, sports: ['🎾', '🏸', '🏐'], location: 'Riverside', image: 'https://images.unsplash.com/photo-1604908554027-783b2abf64f6?w=1000&auto=format&fit=crop&q=60' },
-    { id: 5, name: 'Arena 5', rating: 4.2, sports: ['⚽️', '🏀'], location: 'Uptown', image: 'https://images.unsplash.com/photo-1521417531039-96cce66f7d50?w=1000&auto=format&fit=crop&q=60' },
-    { id: 6, name: 'Court Central', rating: 4.9, sports: ['🎾', '🏸'], location: 'Central Park', image: 'https://images.unsplash.com/photo-1521417531039-96cce66f7d50?w=1000&auto=format&fit=crop&q=60' },
+    { id: 1, name: 'City Sports Arena', rating: 4.7, sports: ['🏀', '🏸', '⚽️'], location: 'Downtown', image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1000&auto=format&fit=crop&q=60', latitude: 19.0760, longitude: 72.8777 },
+    { id: 2, name: 'Greenfield Courts', rating: 4.5, sports: ['🎾', '🏸'], location: 'Greenfield Ave', image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1000&auto=format&fit=crop&q=60', latitude: 23.0225, longitude: 72.5714 },
+    { id: 3, name: 'Skyline Sports Hub', rating: 4.8, sports: ['⚽️', '🏀'], location: 'Skyline Road', image: 'https://images.unsplash.com/photo-1518600506278-4e8ef466b810?w=1000&auto=format&fit=crop&q=60', latitude: 28.7041, longitude: 77.1025 },
+    { id: 4, name: 'Riverside Club', rating: 4.4, sports: ['🎾', '🏸', '🏐'], location: 'Riverside', image: 'https://images.unsplash.com/photo-1604908554027-783b2abf64f6?w=1000&auto=format&fit=crop&q=60', latitude: 12.9716, longitude: 77.5946 },
+    { id: 5, name: 'Arena 5', rating: 4.2, sports: ['⚽️', '🏀'], location: 'Uptown', image: 'https://images.unsplash.com/photo-1521417531039-96cce66f7d50?w=1000&auto=format&fit=crop&q=60', latitude: 18.5204, longitude: 73.8567 },
+    { id: 6, name: 'Court Central', rating: 4.9, sports: ['🎾', '🏸'], location: 'Central Park', image: 'https://images.unsplash.com/photo-1521417531039-96cce66f7d50?w=1000&auto=format&fit=crop&q=60', latitude: 28.4595, longitude: 77.0266 },
   ]), []);
 
   const sports = useMemo(() => ([
@@ -57,6 +58,9 @@ const HomePage = () => {
   const onFindPlayers = () => navigate('/mybookings');
   const onFindVenues = () => navigate('/venues');
 
+  // Map defaults: center on first venue
+  const defaultCenter = venues[0];
+
   return (
     <div className="home-page">
       <Header showNavigation />
@@ -91,12 +95,17 @@ const HomePage = () => {
           </div>
 
           <div className="hero-map">
-            <div className="map-preview" />
-            <span className="map-caption">Map preview (demo)</span>
+            <div style={{ width: '100%', height: 260 }}>
+              <SimpleMap
+                latitude={defaultCenter.latitude}
+                longitude={defaultCenter.longitude}
+                venueName={defaultCenter.name}
+                address={defaultCenter.location}
+              />
+            </div>
+            <span className="map-caption">Popular venues near you</span>
           </div>
         </section>
-
-        {/* Spinning coin moved to Header navbar */}
 
         {/* Venues Section */}
         <section className="section">
@@ -131,53 +140,6 @@ const HomePage = () => {
             </div>
           )}
         </section>
-
-        {/* Popular Sports */}
-        {/* <section className="section">
-          <div className="section-header">
-            <h2>Popular Sports in Your Area</h2>
-            <div className="slider-controls">
-              <button className="arrow" onClick={() => scrollByAmount(sportsRef, -360)}>◀</button>
-              <button className="arrow" onClick={() => scrollByAmount(sportsRef, 360)}>▶</button>
-            </div>
-          </div>
-          <div className="h-scroll" ref={sportsRef}>
-            {sports.map((s) => (
-              <div key={s.id} className="sport-card" style={{ backgroundImage: `url(${s.image})` }}>
-                <div className="sport-overlay" style={{ background: s.gradient }} />
-                <div className="sport-content">
-                  <h3>{s.name}</h3>
-                  <p>{s.tagline}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section> */}
-
-        {/* Upcoming Matches / Find Players */}
-        {/* <section className="section">
-          <div className="section-header">
-            <h2>Upcoming Matches • Find Players</h2>
-            <div className="slider-controls">
-              <button className="arrow" onClick={() => scrollByAmount(matchesRef, -360)}>◀</button>
-              <button className="arrow" onClick={() => scrollByAmount(matchesRef, 360)}>▶</button>
-            </div>
-          </div>
-          <div className="h-scroll" ref={matchesRef}>
-            {matches.map((m) => (
-              <div key={m.id} className="match-card">
-                <div className="match-top">
-                  <span className="match-icon">{m.icon}</span>
-                  <h3>{m.sport}</h3>
-                </div>
-                <div className="match-meta">🗓 {m.when}</div>
-                <div className="match-meta">📍 {m.where}</div>
-                <div className="match-meta">🎯 {m.level} • {m.spots} spots left</div>
-                <Button variant="primary" fullWidth onClick={onFindPlayers}>Join Match</Button>
-              </div>
-            ))}
-          </div>
-        </section> */}
 
         {/* Special Offers & Promotions */}
         <section className="section offers">

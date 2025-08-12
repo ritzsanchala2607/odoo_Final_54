@@ -124,102 +124,14 @@ const MyBookingsPage = () => {
   const sports = ['Football', 'Basketball', 'Tennis', 'Badminton'];
 
   const courts = useMemo(() => ([
-    {
-      id: 'c1',
-      name: 'City Sports Arena',
-      city: 'Mumbai',
-      sport: 'Football',
-      location: 'Lower Parel',
-      rating: 4.6,
-      image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 120,
-      capacity: 10,
-      slots: ['06:00', '07:00', '08:00', '09:00', '18:00', '19:00']
-    },
-    {
-      id: 'c2',
-      name: 'Skyline Courts',
-      city: 'Mumbai',
-      sport: 'Basketball',
-      location: 'Bandra West',
-      rating: 4.4,
-      image: 'https://images.unsplash.com/photo-1518600506278-4e8ef466b810?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 90,
-      capacity: 8,
-      slots: ['07:00', '08:00', '09:00', '19:00', '20:00']
-    },
-    {
-      id: 'c3',
-      name: 'Court Central',
-      city: 'Pune',
-      sport: 'Tennis',
-      location: 'Koregaon Park',
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 60,
-      capacity: 4,
-      slots: ['06:00', '07:00', '08:00', '17:00']
-    },
-    {
-      id: 'c4',
-      name: 'Riverside Club',
-      city: 'Delhi',
-      sport: 'Badminton',
-      location: 'Riverside',
-      rating: 4.2,
-      image: 'https://images.unsplash.com/photo-1604908554027-783b2abf64f6?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 45,
-      capacity: 4,
-      slots: ['08:00', '09:00', '10:00', '18:00']
-    },
-    {
-      id: 'c5',
-      name: 'Bengaluru Arena',
-      city: 'Bengaluru',
-      sport: 'Football',
-      location: 'Indiranagar',
-      rating: 4.5,
-      image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 110,
-      capacity: 12,
-      slots: ['06:00', '07:00', '20:00', '21:00']
-    },
-    {
-      id: 'c6',
-      name: 'Powai Sports Hub',
-      city: 'Mumbai',
-      sport: 'Tennis',
-      location: 'Powai',
-      rating: 4.1,
-      image: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 70,
-      capacity: 4,
-      slots: ['06:00', '07:00', '08:00', '18:00']
-    },
-    {
-      id: 'c7',
-      name: 'Pune Hoop House',
-      city: 'Pune',
-      sport: 'Basketball',
-      location: 'Aundh',
-      rating: 4.3,
-      image: 'https://images.unsplash.com/photo-1483721310020-03333e577078?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 85,
-      capacity: 10,
-      slots: ['07:00', '08:00', '09:00', '17:00', '18:00']
-    },
-    {
-      id: 'c8',
-      name: 'Delhi Smash Centre',
-      city: 'Delhi',
-      sport: 'Badminton',
-      location: 'Dwarka',
-      rating: 4.0,
-      image: 'https://images.unsplash.com/photo-1591579150219-6cac44cb4e60?w=1200&auto=format&fit=crop&q=60',
-      price_per_hour: 50,
-      capacity: 4,
-      slots: ['08:00', '09:00', '10:00', '19:00']
-    }
+    { id: 'c1', name: 'City Sports Arena', city: 'Mumbai', sport: 'Football', location: 'Lower Parel', rating: 4.6, image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1200&auto=format&fit=crop&q=60', price_per_hour: 120, capacity: 10, slots: ['06:00', '07:00', '08:00', '09:00', '18:00', '19:00'] },
+    { id: 'c2', name: 'Skyline Courts', city: 'Mumbai', sport: 'Basketball', location: 'Bandra West', rating: 4.4, image: 'https://images.unsplash.com/photo-1518600506278-4e8ef466b810?w=1200&auto=format&fit=crop&q=60', price_per_hour: 90, capacity: 8, slots: ['07:00', '08:00', '09:00', '19:00', '20:00'] },
+    { id: 'c3', name: 'Court Central', city: 'Pune', sport: 'Tennis', location: 'Koregaon Park', rating: 4.8, image: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1200&auto=format&fit=crop&q=60', price_per_hour: 60, capacity: 4, slots: ['06:00', '07:00', '08:00', '17:00'] },
+    { id: 'c4', name: 'Riverside Club', city: 'Delhi', sport: 'Badminton', location: 'Riverside', rating: 4.2, image: 'https://images.unsplash.com/photo-1604908554027-783b2abf64f6?w=1200&auto=format&fit=crop&q=60', price_per_hour: 45, capacity: 4, slots: ['08:00', '09:00', '10:00', '18:00'] },
+    { id: 'c5', name: 'Bengaluru Arena', city: 'Bengaluru', sport: 'Football', location: 'Indiranagar', rating: 4.5, image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200&auto=format&fit=crop&q=60', price_per_hour: 110, capacity: 12, slots: ['06:00', '07:00', '20:00', '21:00'] },
+    { id: 'c6', name: 'Powai Sports Hub', city: 'Mumbai', sport: 'Tennis', location: 'Powai', rating: 4.1, image: 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?w=1200&auto=format&fit=crop&q=60', price_per_hour: 70, capacity: 4, slots: ['06:00', '07:00', '08:00', '18:00'] },
+    { id: 'c7', name: 'Pune Hoop House', city: 'Pune', sport: 'Basketball', location: 'Aundh', rating: 4.3, image: 'https://images.unsplash.com/photo-1483721310020-03333e577078?w=1200&auto=format&fit=crop&q=60', price_per_hour: 85, capacity: 10, slots: ['07:00', '08:00', '09:00', '17:00', '18:00'] },
+    { id: 'c8', name: 'Delhi Smash Centre', city: 'Delhi', sport: 'Badminton', location: 'Dwarka', rating: 4.0, image: 'https://images.unsplash.com/photo-1591579150219-6cac44cb4e60?w=1200&auto=format&fit=crop&q=60', price_per_hour: 50, capacity: 4, slots: ['08:00', '09:00', '10:00', '19:00'] }
   ]), []);
 
   const [selectedCity, setSelectedCity] = useState('');
@@ -242,8 +154,16 @@ const MyBookingsPage = () => {
   // Step 3 state
   const [paymentMethod, setPaymentMethod] = useState('Pay on Visit');
 
+  // Pricing
   const perPersonCharge = selectedCourt ? selectedCourt.price_per_hour : 0;
-  const totalCharge = perPersonCharge * (Number(numPlayers) || 0);
+  const durationHours = useMemo(() => {
+    if (!(startTime && endTime)) return 0;
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    const diff = eh + em/60 - (sh + sm/60);
+    return diff > 0 ? diff : 0;
+  }, [startTime, endTime]);
+  const totalCharge = perPersonCharge * (Number(numPlayers) || 0) * durationHours;
 
   const canGoNext = () => {
     if (step === 1) return Boolean(selectedCity && selectedSport && selectedCourtName);
@@ -260,8 +180,8 @@ const MyBookingsPage = () => {
     if (!canGoNext()) return;
     if (step < 3) setStep(step + 1);
     else {
-      // Final submit stub
       alert('Booking confirmed. Payment method: ' + paymentMethod);
+      setShowWizard(false);
     }
   };
 
@@ -302,11 +222,6 @@ const MyBookingsPage = () => {
     <div className="my-bookings-page">
       <Header showNavigation />
       <div className="bookings-container fade-in">
-        {/* <div className="bookings-header">
-          <h1>My Sports Bookings</h1>
-          <p>Track, edit, and manage your QuickCourt reservations</p>
-        </div> */}
-
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
           <Button variant="primary" onClick={() => { setShowWizard(true); setStep(1); }}>
             + Create New Booking
@@ -427,7 +342,6 @@ const MyBookingsPage = () => {
                       const showMap = Boolean(selectedCity || selectedSport);
                       return (
                         <div className={`map-and-courts ${!showMap ? 'no-map' : ''}`}>
-                          {/* {showMap && <div className="map-panel" />} */}
                           <div className="courts-grid">
                             {filteredCourts.map((c) => (
                               <div key={c.id} className={`court-card ${selectedCourt && selectedCourt.id === c.id ? 'court-card-active' : ''}`} onClick={() => setSelectedCourtName(c.name)}>
@@ -521,6 +435,7 @@ const MyBookingsPage = () => {
                       <div className="charge-card">
                         <div className="charge-row"><span>Per person</span><strong>₹{perPersonCharge.toFixed(2)}</strong></div>
                         <div className="charge-row"><span>Players</span><strong>{numPlayers}</strong></div>
+                        <div className="charge-row"><span>Hours</span><strong>{durationHours.toFixed(1)}</strong></div>
                         <div className="charge-divider" />
                         <div className="charge-row total"><span>Total</span><strong>₹{totalCharge.toFixed(2)}</strong></div>
                       </div>
@@ -538,7 +453,7 @@ const MyBookingsPage = () => {
                     </div>
                     <div className="nav-row">
                       <Button variant="secondary" onClick={handleBack}>Back</Button>
-                      <Button variant="primary" disabled={!canGoNext()} onClick={() => { handleNext(); setShowWizard(false); }}>Confirm Booking</Button>
+                      <Button variant="primary" disabled={!canGoNext()} onClick={handleNext}>Confirm Booking</Button>
                     </div>
                   </div>
                 )}
