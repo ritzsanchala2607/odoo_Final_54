@@ -36,6 +36,15 @@ async function list(req, res) {
   }
 }
 
+async function listAll(req, res) {
+  try {
+    const result = await venueService.listVenuesAll();
+    return res.json(result);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+}
+
 async function get(req, res) {
   try {
     const venue = await venueService.getVenueWithCourts(req.params.id);
@@ -57,6 +66,7 @@ async function approve(req, res) {
     return res.status(400).json({ message: err.message });
   }
 }
+
 
 async function listAll(req, res) {
   try {
