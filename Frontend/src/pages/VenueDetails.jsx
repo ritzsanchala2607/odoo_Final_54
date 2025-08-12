@@ -3,8 +3,6 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import BookingModal from "../components/BookingModal";
-import RazorpayPayment from "../components/RazorpayPayment";
-import BookingConfirmation from "../components/BookingConfirmation";
 import SimpleMap from "../components/SimpleMap";
 import CourtBookingModal from "../components/CourtBookingModal";
 import "./VenueDetails.css";
@@ -13,10 +11,7 @@ const VenueDetails = () => {
   const { id } = useParams();
 
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
   const [bookingData, setBookingData] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [paymentData, setPaymentData] = useState(null);
 
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,27 +44,10 @@ const VenueDetails = () => {
     setIsCourtModalOpen(true);
   };
 
-  const handleBookingConfirm = (payload) => {
-    setBookingData(payload);
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = (paymentResult) => {
-    setPaymentData(paymentResult);
-    setShowPayment(false);
-    setShowConfirmation(true);
-  };
-
-  const handlePaymentFailure = (error) => {
-    console.error("Payment failed:", error);
-    alert("Payment failed: " + error);
-    setShowPayment(false);
-  };
-
-  const handleCloseConfirmation = () => {
-    setShowConfirmation(false);
-    setBookingData(null);
-    setPaymentData(null);
+  const handleBookingConfirm = ({ booking }) => {
+    setBookingData(booking);
+    setIsCourtModalOpen(false);
+    alert('Booking confirmed with credits. See My Bookings for details.');
   };
 
   const venueName = venue?.name || "Venue";
@@ -214,25 +192,6 @@ const VenueDetails = () => {
         venue={venue}
         onBookingConfirm={handleBookingConfirm}
       />
-
-      {/* Payment Component (optional) */}
-      {showPayment && bookingData && (
-        <div className="payment-overlay">
-          <RazorpayPayment
-            bookingDetails={bookingData}
-            onPaymentSuccess={handlePaymentSuccess}
-            onPaymentFailure={handlePaymentFailure}
-          />
-        </div>
-      )}
-
-      {/* Booking Confirmation */}
-      {showConfirmation && paymentData && (
-        <BookingConfirmation
-          bookingData={paymentData}
-          onClose={handleCloseConfirmation}
-        />
-      )}
     </>
   );
 };
